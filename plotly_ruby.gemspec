@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ['y4ashida']
   spec.email         = ['y4ashida@gmail.com']
 
-  spec.summary       = %q{ A Ruby wrapper to the PlotLy REST API. }
-  spec.description   = %q{ A Ruby wrapper to the PlotLy REST API. }
+  spec.summary       = 'A Ruby wrapper to the PlotLy REST API.'
+  spec.description   = 'A Ruby wrapper to the PlotLy REST API.'
   spec.homepage      = 'https://github.com/y4ashida/plotly_ruby'
   spec.license       = 'MIT'
 
@@ -22,7 +22,7 @@ Gem::Specification.new do |spec|
     raise 'RubyGems 2.0 or newer is required to protect against public gem pushes.'
   end
 
-  spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
+  spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec)/}) }
   spec.bindir        = 'exe'
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
