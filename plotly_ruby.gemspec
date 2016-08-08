@@ -1,11 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'plotly_ruby/version'
+require 'plotly/version'
 
 Gem::Specification.new do |spec|
   spec.name          = 'plotly_ruby'
-  spec.version       = PlotlyRuby::VERSION
+  spec.version       = Plotly::VERSION
   spec.authors       = ['y4ashida']
   spec.email         = ['y4ashida@gmail.com']
 
