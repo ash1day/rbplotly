@@ -1,8 +1,6 @@
 # PlotlyRuby
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/plotly_ruby`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+[Plot.ly](https://plot.ly/) API client and Interface to [plotly.js](https://plot.ly/javascript/).
 
 ## Installation
 
@@ -22,20 +20,36 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+### Plotly Offline
 
-## Development
+```ruby
+require 'plotly'
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+n = 100
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+x  = (0..n).map { |i| i.to_f / n }
+y0 = (0..n).map { rand(-2.0..2.0) + 5 }
+y1 = (0..n).map { rand(-2.0..2.0) }
+y2 = (0..n).map { rand(-2.0..2.0) - 5 }
+
+trace0 = {
+  x: x,
+  y: y0,
+  type: 'scatter',
+  mode: 'markers'
+}
+
+trace1 = trace0.merge(y: y1, mode: 'markers+lines')
+trace2 = trace0.merge(y: y2, mode: 'lines')
+
+Plotly::Offline.plot([trace0, trace1, trace2], path: 'line_and_scatter.html')
+```
 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/y4ashida/plotly_ruby. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
 
-
 ## License
 
-The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
-
+Copyright (c) 2016 Yoshihiro Ashida. See [LICENSE.txt](LICENSE.txt) for
+further details.
