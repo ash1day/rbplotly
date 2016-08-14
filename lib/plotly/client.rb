@@ -16,7 +16,7 @@ module Plotly
     # @param data [Array]
     # @param image_path [String]
     # @param image_type [String]
-    # @param layout [hash]
+    # @param layout [Hash]
     def plot_image(data, image_path, image_type, layout = {})
       payload = {
         figure: {

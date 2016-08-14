@@ -2,8 +2,8 @@ require 'spec_helper'
 
 describe Plotly::Client do
   let(:username) { ENV['PLOTLY_USERNAME'] }
-  let(:api_key) { ENV['PLOTLY_API_KEY'] }
-  let(:client) { Plotly::Client.new(username: username, api_key: api_key) }
+  let(:api_key)  { ENV['PLOTLY_API_KEY'] }
+  let(:client)   { Plotly::Client.new(username: username, api_key: api_key) }
 
   it 'is instantiated' do
     expect(client).to be_a Plotly::Client
