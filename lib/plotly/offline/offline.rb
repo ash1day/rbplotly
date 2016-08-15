@@ -11,9 +11,8 @@ module Plotly
       # @param open [Boolean]
       def plot(data, layout: {}, path: 'plot.html', open: true)
         html = create_html(data, layout: layout)
-        p html.render.class
         File.write(path, html.render)
-        Launchy.open(path) if open
+        Launchy.open(File.absolute_path(path)) if open
       end
 
       # @param data [Array]
