@@ -4,14 +4,14 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'plotly/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = 'plotly_ruby'
+  spec.name          = 'rbplotly'
   spec.version       = Plotly::VERSION
   spec.authors       = ['y4ashida']
   spec.email         = ['y4ashida@gmail.com']
 
   spec.summary       = 'A Ruby wrapper to the PlotLy REST API.'
   spec.description   = 'A Ruby wrapper to the PlotLy REST API.'
-  spec.homepage      = 'https://github.com/y4ashida/plotly_ruby'
+  spec.homepage      = 'https://github.com/y4ashida/rbplotly'
   spec.license       = 'MIT'
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
