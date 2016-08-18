@@ -12,7 +12,7 @@
 <div id="<%= @id %>" style="height: 100%; width: 100%;" class="plotly-graph-div"></div>
 
 <script>
-require(["plotly"], function(Plotly) {
+<% if @embedded %> require(["plotly"], function(Plotly) { <% end %>
   window.PLOTLYENV=window.PLOTLYENV || {}
   window.PLOTLYENV.BASE_URL='https://plot.ly'
 
@@ -26,5 +26,5 @@ require(["plotly"], function(Plotly) {
   window.addEventListener('resize', function() {
     Plotly.Plots.resize(document.getElementById('<%= @id %>'))
   })
-})
+<% if @embedded %> }) <% end %>
 </script>
