@@ -3,6 +3,14 @@ require 'base64'
 require 'json'
 
 module Plotly
+  class << self
+    attr_reader :client
+
+    def auth(username, api_key)
+      @client = Client.new(username, api_key)
+    end
+  end
+
   class Client
     attr_reader :conn
 
