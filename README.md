@@ -1,4 +1,4 @@
-# PlotlyRuby
+# Rbplotly
 
 [Plot.ly](https://plot.ly/) API client and Interface to [plotly.js](https://plot.ly/javascript/).
 
@@ -7,7 +7,7 @@
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'plotly_ruby'
+gem 'rbplotly'
 ```
 
 And then execute:
@@ -16,14 +16,14 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install plotly_ruby
+    $ gem install rbplotly
 
 ## Usage
 
 ### Plotly Offline
 
 ```ruby
-require 'plotly'
+require 'rbplotly'
 
 n = 100
 
@@ -47,7 +47,7 @@ Plotly::Offline.plot([trace0, trace1, trace2], path: 'line_and_scatter.html')
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/y4ashida/plotly_ruby. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
+Bug reports and pull requests are welcome on GitHub at https://github.com/y4ashida/rbplotly. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
 
 ## License
 
