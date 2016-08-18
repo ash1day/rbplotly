@@ -1,3 +1,3 @@
 require 'plotly/version'
 require 'plotly/client'
-require 'plotly/offline/offline'
+require 'plotly/plot'
