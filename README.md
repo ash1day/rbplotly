@@ -40,7 +40,7 @@ data = [trace0, trace1, trace2]
 
 plot = Plotly::Plot.new(data: data)
 
-plot.generate_html(path: 'tmp/scatter_and_line.html')
+plot.generate_html(path: './scatter_and_line.html')
 ```
 
 ## Contributing
