@@ -10,8 +10,9 @@ module Plotly
 
       # @param id [String]
       # @param data [Array]
-      # @param layout [Hash]
-      # @param path [String]
+      # @option layout [Hash]
+      # @option config [Hash]
+      # @option embedded [Boolean]
       def initialize(id, data, layout: {}, config: DEFAULT_CONFIG, embedded: false)
         @id       = id
         @data     = data
