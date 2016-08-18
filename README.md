@@ -43,6 +43,8 @@ plot = Plotly::Plot.new(data: data)
 plot.generate_html(path: './scatter_and_line.html')
 ```
 
+![](./docs/images/scatter_and_line.png)
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/y4ashida/rbplotly. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
