@@ -4,30 +4,15 @@ require 'json'
 
 module Plotly
   class Client
+    attr_reader :conn
+
     # @param username [String]
     # @param api_key [String]
-    def initialize(username: nil, api_key: nil)
+    def initialize(username, api_key)
       @conn = Faraday.new(
         url: 'https://api.plot.ly/v2',
         headers: build_headers(username, api_key)
       )
-    end
-
-    # @param data [Array]
-    # @param image_path [String]
-    # @param image_type [String]
-    # @param layout [Hash]
-    def plot_image(data, image_path, image_type, layout = {})
-      payload = {
-        figure: {
-          data: data,
-          layout: layout
-        },
-        format: image_type
-      }.to_json
-
-      res = @conn.post('images', payload)
-      IO.binwrite(image_path.to_s, res.body)
     end
 
     private
