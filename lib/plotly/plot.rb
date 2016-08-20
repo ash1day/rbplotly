@@ -45,8 +45,8 @@ module Plotly
     def download_image(format, path, client: ::Plotly.client)
       payload = {
         figure: {
-          data:   @data,
-          layout: @layout
+          data:   @data.map(&:to_h),
+          layout: @layout.to_h
         },
         format: format
       }.to_json
