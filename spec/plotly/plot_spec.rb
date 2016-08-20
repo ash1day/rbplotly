@@ -35,20 +35,25 @@ describe Plotly::Plot do
 
   describe '#generate_html' do
     it 'generates html' do
-      plot.generate_html(path: 'spec/tmp/scatter_and_line.html', open: false)
-      # @todo add expectation
+      path = 'spec/tmp/scatter_and_line.html'
+      plot.generate_html(path: path, open: false)
+      generated_html = open(path).read
+      expect(generated_html).to include('plotly.js')
     end
   end
 
   describe '#download_image' do
     let(:username) { ENV['PLOTLY_USERNAME'] }
     let(:api_key)  { ENV['PLOTLY_API_KEY'] }
+    let(:path)     { 'spec/tmp/scatter.png' }
 
     context 'with instantiated client' do
       let(:client) { Plotly::Client.new(username, api_key) }
       it 'downloads image' do
-        plot.download_image(:png, 'spec/tmp/scatter.png', client: client)
-        # @todo add expectation
+        plot.download_image(:png, path, client: client)
+
+        generated_image = open(path).read
+        expect(generated_image).not_to include('errors')
       end
     end
 
@@ -61,8 +66,10 @@ describe Plotly::Plot do
     context 'with default client' do
       it 'downloads image' do
         Plotly.auth(username, api_key)
-        plot.download_image(:png, 'spec/tmp/scatter.png')
-        # @todo add expectation
+        plot.download_image(:png, path)
+
+        generated_image = open(path).read
+        expect(generated_image).not_to include('errors')
       end
     end
   end
