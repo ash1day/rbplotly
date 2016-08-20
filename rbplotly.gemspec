@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ['y4ashida']
   spec.email         = ['y4ashida@gmail.com']
 
-  spec.summary       = 'A Ruby wrapper to the PlotLy REST API.'
-  spec.description   = 'A Ruby wrapper to the PlotLy REST API.'
+  spec.summary       = 'Plot.ly API client and Interface to plotly.js.'
+  spec.description   = 'Plot.ly API client and Interface to plotly.js.'
   spec.homepage      = 'https://github.com/y4ashida/rbplotly'
   spec.license       = 'MIT'
 
@@ -28,7 +28,6 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'faraday',            '~> 0.9'
-  spec.add_dependency 'faraday_middleware', '~> 0.10'
   spec.add_dependency 'uuidtools',          '~> 2.1'
   spec.add_dependency 'launchy',            '~> 2.4'
 
