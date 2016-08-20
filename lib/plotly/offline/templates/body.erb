@@ -1,7 +1,6 @@
 <% if @embedded %>
   <script>
   requirejs.config({paths: { 'plotly': ['https://cdn.plot.ly/plotly-latest.min'] }})
-  if(!window.Plotly) {{require(['plotly'], function(plotly) {window.Plotly=plotly})}}
   </script>
 <% else %>
   <script>
@@ -9,22 +8,19 @@
   </script>
 <% end %>
 
-<div id="<%= @id %>" style="height: 100%; width: 100%;" class="plotly-graph-div"></div>
+<div id="<%= @id %>" style="height: 100%; width: 100%;"></div>
 
 <script>
-<% if @embedded %> require(["plotly"], function(Plotly) { <% end %>
-  window.PLOTLYENV=window.PLOTLYENV || {}
-  window.PLOTLYENV.BASE_URL='https://plot.ly'
+<% if @embedded %> require(['plotly'], function(Plotly) { <% end %>
+Plotly.newPlot(
+  <%= "'#{@id}'" %>,
+  <%= @data.to_json %>,
+  <%= @layout.to_json %>,
+  <%= @config.to_json %>
+)
 
-  Plotly.newPlot(
-    '<%= @id %>',
-    <%= @data.to_json %>,
-    <%= @layout.to_json %>,
-    <%= @config.to_json %>
-  )
-
-  window.addEventListener('resize', function() {
-    Plotly.Plots.resize(document.getElementById('<%= @id %>'))
-  })
+window.addEventListener('resize', function() {
+  Plotly.Plots.resize(document.getElementById('<%= @id %>'))
+})
 <% if @embedded %> }) <% end %>
 </script>
