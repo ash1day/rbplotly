@@ -1,6 +1,10 @@
+require 'plotly/castable'
+
 module Plotly
   class Layout
     ATTRS = %i(x_title y_title barmode).freeze
+    include Castable
+
     attr_accessor(*ATTRS)
 
     def initialize(x_title: nil, y_title: nil, barmode: nil)
@@ -9,12 +13,6 @@ module Plotly
       @barmode = barmode
     end
 
-    def to_h
-      {
-        xaxis: { title: @x_title },
-        yaxis: { title: @y_title },
-        barmode: @barmode
-      }
     end
   end
 end
