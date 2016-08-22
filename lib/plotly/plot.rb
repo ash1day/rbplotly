@@ -1,13 +1,15 @@
 require 'plotly/data'
 require 'plotly/layout'
+require 'plotly/exportable'
 require 'plotly/offline/exportable'
 
 module Plotly
   class Plot
+    include Exportable
     include Offline::Exportable
 
     # @!attribute [r] data
-    #   @return [Array] the list of data
+    #   @return [Array] list of Plotly::Data objects
     # @!attribute [r] layout
     #   @return [Plotly::Layout]
     attr_reader :data, :layout
@@ -40,18 +42,6 @@ module Plotly
     # @param layout [Hash or Plotly::Layout]
     def layout=(layout)
       @layout = layout.convert_to(Plotly::Layout)
-    end
-    def download_image(format, path, client: ::Plotly.client)
-      payload = {
-        figure: {
-          data:   @data.map(&:to_h),
-          layout: @layout.to_h
-        },
-        format: format
-      }.to_json
-
-      res = client.conn.post('images', payload)
-      IO.binwrite(path, res.body)
     end
   end
 end
