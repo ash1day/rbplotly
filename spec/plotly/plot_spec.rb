@@ -22,19 +22,14 @@ describe Plotly::Plot do
     expect(plot).to be_a Plotly::Plot
   end
 
-  it 'has Plotly::Layout setter methods' do
-    setters = Plotly::Layout::ATTRS.map { |attr_name| "#{attr_name}=".to_sym }
-    expect(Plotly::Plot.instance_methods).to include(*setters)
-
-    plot.x_title = x_title = 'x_title'
-    plot.y_title = y_title = 'y_title'
-
-    expect(plot.layout.x_title).to eq x_title
-    expect(plot.layout.y_title).to eq y_title
+  describe '#layout=' do
+    it 'sets layout' do
+      plot.layout = { xaxis: { title: 'x_title' } }
+    end
   end
 
   describe '#generate_html' do
-    it 'generates html' do
+    it 'generates html which includes plotly.js' do
       path = 'spec/tmp/scatter_and_line.html'
       plot.generate_html(path: path, open: false)
       generated_html = open(path).read

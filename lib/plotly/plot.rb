@@ -31,18 +31,16 @@ module Plotly
 
     # @todo add remove_data method
 
-    # Define Layout attr_accessor wrapper methods
-    # @example
-    #   def x_title=(x_title)
-    #     @x_title = x_title
-    #   end
-    Layout::ATTRS.each do |attr_name|
-      define_method("#{attr_name}=") { |attr| @layout.send("#{attr_name}=", attr) }
+    # @param data [Array] list of Hash or Plotly::Data objects
+    def data=(data)
+      raise unless data.is_a?(Array)
+      @data = data.map { |d| d.convert_to(Plotly::Data) }
     end
 
-    # @param [String] format
-    # @param [String] path
-    # @option [Plotly::Client] client
+    # @param layout [Hash or Plotly::Layout]
+    def layout=(layout)
+      @layout = layout.convert_to(Plotly::Layout)
+    end
     def download_image(format, path, client: ::Plotly.client)
       payload = {
         figure: {
