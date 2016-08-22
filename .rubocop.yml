@@ -13,6 +13,9 @@ MethodLength:
 Documentation:
   Enabled: false
 
+ParameterLists:
+  CountKeywordArgs: false
+
 RegexpLiteral:
   Exclude:
     - '**/*.gemspec'
