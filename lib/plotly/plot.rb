@@ -12,10 +12,11 @@ module Plotly
     #   @return [Plotly::Layout]
     attr_reader :data, :layout
 
-    # @todo enable to initialize with Data or Layout class instances
+    # @option data [Array] list of Hash or Plotly::Data objects
+    # @option layout [Hash or Plotly::Layout]
     def initialize(data: [], layout: {})
-      @data   = data.map { |d| Data.new(d) }
-      @layout = Layout.new(layout)
+      @data   = data.map { |d| d.is_a?(Hash) ? Data.new(d) : d }
+      @layout = layout.convert_to(Plotly::Layout)
     end
 
     # @param data [Plotly::Data or Hash]
