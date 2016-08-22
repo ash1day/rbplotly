@@ -1,6 +1,9 @@
+require 'plotly/castable'
+
 module Plotly
   class Data
     attr_accessor :x, :y, :type, :mode, :name
+    include Castable
 
     # @option x [Array]
     # @option y [Array]
@@ -13,16 +16,7 @@ module Plotly
       @type = type
       @mode = mode
       @name = name
-    end
 
-    def to_h
-      {
-        x: @x,
-        y: @y,
-        type: @type,
-        mode: @mode,
-        name: @name
-      }
     end
   end
 end

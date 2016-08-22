@@ -22,4 +22,9 @@ describe Plotly::Data do
       it { expect(data).to be_a Plotly::Data }
     end
   end
+
+  describe '#to_h' do
+    let(:params) { { x: Array.new(4, rand) } }
+    it { expect(data.to_h).to eq params }
+  end
 end
