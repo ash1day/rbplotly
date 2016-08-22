@@ -45,7 +45,7 @@ describe Plotly::Plot do
     context 'with instantiated client' do
       let(:client) { Plotly::Client.new(username, api_key) }
       it 'downloads image' do
-        plot.download_image(:png, path, client: client)
+        plot.download_image(path: path, client: client)
 
         generated_image = open(path).read
         expect(generated_image).not_to include('errors')
@@ -54,14 +54,14 @@ describe Plotly::Plot do
 
     context 'with no client' do
       it 'raises error' do
-        # @todo add expectation
+        expect { plot.download_image(path: path) }.to raise_error(NoMethodError)
       end
     end
 
     context 'with default client' do
       it 'downloads image' do
         Plotly.auth(username, api_key)
-        plot.download_image(:png, path)
+        plot.download_image(path: path, height: 300, width: 500, scale: 1)
 
         generated_image = open(path).read
         expect(generated_image).not_to include('errors')
