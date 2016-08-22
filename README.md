@@ -49,6 +49,10 @@ plot.generate_html(path: './scatter_and_line.html')
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/y4ashida/rbplotly. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
 
+## Thanks
+
+`rbplotly` is based on [plotly/plotly.py](https://github.com/plotly/plotly.py), so there are a lot of code coming from it.
+
 ## License
 
 Copyright (c) 2016 Yoshihiro Ashida. See [LICENSE.txt](LICENSE.txt) for
