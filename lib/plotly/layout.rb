@@ -5,7 +5,7 @@ module Plotly
   class Layout
     include Castable
 
-    ATTRS = %i(title barmode xaxis yaxis).freeze
+    ATTRS = %i(title barmode xaxis yaxis width height).freeze
     attr_accessor(*ATTRS)
 
     AXISES = %i(xaxis yaxis).freeze
