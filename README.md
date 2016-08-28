@@ -25,30 +25,41 @@ Or install it yourself as:
 
 ## Usage
 
-### Plotly Offline
-
 ```ruby
 require 'rbplotly'
 
-n = 100
+x = [0, 1, 2, 3, 4]
+trace0 = { x: x, y: [0, 2, 1, 4, 3], type: :scatter, mode: :lines }
+trace1 = { x: x, y: [4, 1, 3, 0, 2], type: :scatter, mode: 'markers+lines' }
+data = [trace0, trace1] # data must be Array
 
-x  = (1...n).map { |i| i.to_f / n }
-y0 = (1...n).map { rand(-2.0...2.0) + 5 }
-y1 = (1...n).map { rand(-2.0...2.0) }
-y2 = (1...n).map { rand(-2.0...2.0) - 5 }
+layout = { width: 500, height: 500 }
 
-trace0 = { x: x, y: y0, type: 'scatter', mode: 'markers' }
-trace1 = trace0.merge(y: y1, mode: 'markers+lines')
-trace2 = trace0.merge(y: y2, mode: 'lines')
+plot = Plotly::Plot.new(data: data, layout: layout)
 
-data = [trace0, trace1, trace2]
+plot.layout.height = 300 # You can change plot's attributes.
 
-plot = Plotly::Plot.new(data: data)
-
-plot.generate_html(path: './scatter_and_line.html')
+plot.generate_html(path: './line_chart.html')
 ```
 
-![](./docs/images/scatter_and_line.png)
+![](./docs/images/line_chart.png)
+
+Use `#download_image` if you want to get an image by using Plot.ly API. You can get your API KEY [here](https://plot.ly/settings/api).
+
+```ruby
+Plotly.auth(<YOUR_USERNAME>, <YOUR_API_KEY>)
+plot.download_image(path: './line_chart.png')
+```
+
+Or use `#show` on IRuby notebooks.
+
+```ruby
+plot.show
+```
+
+## Examples
+
+Visit [nbviewer.jupyter.org/github/y4ashida/rbplotly](https://nbviewer.jupyter.org/github/y4ashida/rbplotly/tree/master/examples/) to see more examples.
 
 ## Contributing
 
