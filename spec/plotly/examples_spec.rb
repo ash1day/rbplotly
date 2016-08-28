@@ -17,7 +17,7 @@ describe 'Examples' do
 
     plot.layout.height = 300 # You can change plot's attributes.
 
-    plot.generate_html(path: path)
+    plot.generate_html(path: path, open: false)
   end
 
   it 'Heatmap example' do
