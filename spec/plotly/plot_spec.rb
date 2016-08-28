@@ -30,7 +30,7 @@ describe Plotly::Plot do
 
   describe '#generate_html' do
     it 'generates html which includes plotly.js' do
-      path = 'spec/tmp/scatter_and_line.html'
+      path = TMP_DIR + 'scatter_and_line.html'
       plot.generate_html(path: path, open: false)
       generated_html = open(path).read
       expect(generated_html).to include('plotly.js')
@@ -40,7 +40,7 @@ describe Plotly::Plot do
   describe '#download_image' do
     let(:username) { ENV['PLOTLY_USERNAME'] }
     let(:api_key)  { ENV['PLOTLY_API_KEY'] }
-    let(:path)     { 'spec/tmp/scatter.png' }
+    let(:path)     { TMP_DIR + 'scatter.png' }
 
     context 'with instantiated client' do
       let(:client) { Plotly::Client.new(username, api_key) }
