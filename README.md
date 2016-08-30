@@ -1,11 +1,11 @@
 [![Gem Version](https://badge.fury.io/rb/rbplotly.svg)](https://badge.fury.io/rb/rbplotly)
-[![Dependency Status](https://gemnasium.com/badges/github.com/y4ashida/rbplotly.svg)](https://gemnasium.com/github.com/y4ashida/rbplotly)
-[![Build Status](https://travis-ci.org/y4ashida/rbplotly.svg?branch=master)](https://travis-ci.org/y4ashida/rbplotly)
-[![Code Climate](https://codeclimate.com/github/y4ashida/rbplotly/badges/gpa.svg)](https://codeclimate.com/github/y4ashida/rbplotly)
+[![Dependency Status](https://gemnasium.com/badges/github.com/ash1day/rbplotly.svg)](https://gemnasium.com/github.com/ash1day/rbplotly)
+[![Build Status](https://travis-ci.org/ash1day/rbplotly.svg?branch=master)](https://travis-ci.org/ash1day/rbplotly)
+[![Code Climate](https://codeclimate.com/github/ash1day/rbplotly/badges/gpa.svg)](https://codeclimate.com/github/ash1day/rbplotly)
 
 # Rbplotly
 
-[Plot.ly](https://plot.ly/) API client and Interface to [plotly.js](https://plot.ly/javascript/).
+Rbplotly, a Ruby visualization library, allows you to create interactive plots.
 
 ## Installation
 
@@ -59,11 +59,15 @@ plot.show
 
 ## Examples
 
-Visit [nbviewer.jupyter.org/github/y4ashida/rbplotly](https://nbviewer.jupyter.org/github/y4ashida/rbplotly/tree/master/examples/) to see more examples.
+Visit [nbviewer.jupyter.org/github/ash1day/rbplotly](https://nbviewer.jupyter.org/github/ash1day/rbplotly/tree/master/examples/) to see more examples.
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/y4ashida/rbplotly. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
+1. Fork it
+2. Create your feature branch (git checkout -b my-new-feature)
+3. Commit your changes (git commit -am 'Add some feature')
+4. Push to the branch (git push origin my-new-feature)
+5. Create new Pull Request
 
 ## Thanks
 
