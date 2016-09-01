@@ -4,3 +4,6 @@ rvm:
 script: bundle exec rake ci
 sudo: false
 cache: bundler
+addons:
+  code_climate:
+    repo_token: c30552ebdf8e631457b7dc321138e8d1455e36def696c453ba9428dc082f247f
