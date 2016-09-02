@@ -21,18 +21,6 @@ module Plotly
       @layout = layout.convert_to(Plotly::Layout)
     end
 
-    # @param data [Plotly::Data or Hash]
-    def add_data(data = Data.new)
-      @data.push begin
-        case data
-        when Data then data
-        when Hash then Data.new(data)
-        end
-      end
-    end
-
-    # @todo add remove_data method
-
     # @param data [Array] list of Hash or Plotly::Data objects
     def data=(data)
       raise unless data.is_a?(Array)
