@@ -1,10 +1,11 @@
 require 'plotly/castable'
+require 'plotly/marker'
 
 module Plotly
   class Data
     include Castable
 
-    attr_accessor :x, :y, :z, :values, :labels, :mode, :type, :name, :colorscale
+    attr_accessor :x, :y, :z, :values, :labels, :mode, :type, :name, :colorscale, :marker
 
     # @option opts [Array] x
     # @option opts [Array] y
@@ -15,8 +16,17 @@ module Plotly
     # @option opts [String] type
     # @option opts [String] name
     # @option opts [Array] colorscale
+    # @option opts [Hash or Plotly::Marker] marker
     def initialize(opts = {})
-      opts.each { |k, v| instance_variable_set("@#{k}", v) }
+      opts.each do |k, v|
+        v.convert_to(Plotly::Data::Marker) if k == marker
+        instance_variable_set("@#{k}", v)
+      end
+    end
+
+    def marker=(marker)
+      marker.convert_to(Plotly::Data::Marker)
+      @marker = marker
     end
   end
 end
