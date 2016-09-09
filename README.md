@@ -60,7 +60,15 @@ plot.show
 
 ## Examples
 
-Visit [nbviewer.jupyter.org/github/ash1day/rbplotly](https://nbviewer.jupyter.org/github/ash1day/rbplotly/tree/master/examples/) to see more examples.
+- [Basic Usage](https://nbviewer.jupyter.org/github/ash1day/rbplotly/blob/master/examples/Basic%20Usage.ipynb)
+- [Bar Charts](https://nbviewer.jupyter.org/github/ash1day/rbplotly/blob/master/examples/Bar%20%20Charts.ipynb)
+- [Scatter Plots](https://nbviewer.jupyter.org/github/ash1day/rbplotly/blob/master/examples/Scatter%20Plots.ipynb)
+- [Line Charts](https://nbviewer.jupyter.org/github/ash1day/rbplotly/blob/master/examples/Line%20charts.ipynb)
+- [Pie Charts](https://nbviewer.jupyter.org/github/ash1day/rbplotly/blob/master/examples/Pie%20Charts.ipynb)
+- [Histograms](https://nbviewer.jupyter.org/github/ash1day/rbplotly/blob/master/examples/Histograms.ipynb)
+- [Heatmaps](https://nbviewer.jupyter.org/github/ash1day/rbplotly/blob/master/examples/heatmaps.ipynb)
+
+Visit [here](https://nbviewer.jupyter.org/github/ash1day/rbplotly/tree/master/examples/) to see more examples.
 
 ## Contributing
 
