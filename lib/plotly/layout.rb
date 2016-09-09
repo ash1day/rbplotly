@@ -1,5 +1,5 @@
-require 'plotly/axis'
 require 'plotly/castable'
+require 'plotly/axis'
 
 module Plotly
   class Layout
