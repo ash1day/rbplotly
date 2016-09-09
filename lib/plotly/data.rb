@@ -19,13 +19,13 @@ module Plotly
     # @option opts [Hash or Plotly::Marker] marker
     def initialize(opts = {})
       opts.each do |k, v|
-        v.convert_to(Plotly::Data::Marker) if k == marker
+        v.convert_to(Plotly::Marker) if k == marker
         instance_variable_set("@#{k}", v)
       end
     end
 
     def marker=(marker)
-      marker.convert_to(Plotly::Data::Marker)
+      marker.convert_to(Plotly::Marker)
       @marker = marker
     end
   end
