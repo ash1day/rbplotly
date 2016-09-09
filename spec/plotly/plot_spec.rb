@@ -54,7 +54,7 @@ describe Plotly::Plot do
 
     context 'with no client' do
       it 'raises error' do
-        expect { plot.download_image(path: path) }.to raise_error(NoMethodError)
+        expect { plot.download_image(path: path) }.to raise_error(RuntimeError)
       end
     end
 

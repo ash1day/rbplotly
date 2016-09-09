@@ -3,14 +3,6 @@ require 'base64'
 require 'json'
 
 module Plotly
-  class << self
-    attr_reader :client
-
-    def auth(username, api_key)
-      @client = Client.new(username, api_key)
-    end
-  end
-
   class Client
     attr_reader :conn
 
@@ -35,6 +27,19 @@ module Plotly
         'content-type' => 'application/json',
         authorization: "Basic #{encoded_auth}"
       }
+    end
+  end
+
+  class << self
+    # Set the default client which is automatically used when any clients aren't assigned.
+    def auth(username, api_key)
+      @client = Client.new(username, api_key)
+    end
+
+    # @return [Plotly::Client]
+    # @raise [RuntimeError]
+    def client
+      @client ? @client : raise('Authentication required')
     end
   end
 end
