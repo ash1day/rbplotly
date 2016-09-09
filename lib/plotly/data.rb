@@ -5,7 +5,7 @@ module Plotly
   class Data
     include Castable
 
-    attr_accessor :x, :y, :z, :values, :labels, :mode, :type, :name, :colorscale, :marker
+    attr_accessor :x, :y, :z, :values, :labels, :mode, :type, :name, :text, :colorscale, :marker
 
     # @option opts [Array] x
     # @option opts [Array] y
@@ -15,6 +15,7 @@ module Plotly
     # @option opts [String] mode
     # @option opts [String] type
     # @option opts [String] name
+    # @option opts [Array] text array of strings
     # @option opts [Array] colorscale
     # @option opts [Hash or Plotly::Marker] marker
     def initialize(opts = {})

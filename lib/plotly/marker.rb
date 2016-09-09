@@ -5,7 +5,7 @@ module Plotly
   class Marker
     include Castable
 
-    ATTRS = %i(size color line).freeze
+    ATTRS = %i(size color opacity line).freeze
     attr_accessor(*ATTRS)
 
     # @option opts [Fixnum] size
