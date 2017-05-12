@@ -20,6 +20,11 @@ module Plotly
         Launchy.open(File.absolute_path(path)) if open
       end
 
+      def to_html
+        html = create_html(@data, layout: @layout, embedded: true)
+        html.render
+      end
+
       private
 
       def create_html(data, layout: {}, embedded: false)
