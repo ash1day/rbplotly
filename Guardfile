@@ -5,8 +5,3 @@ guard :rspec, all_after_pass: true, all_on_start: true, cmd: 'bundle exec rspec'
   watch('spec/spec_helper.rb')     { 'spec' }
   watch(%r{^spec/support/.+\.rb$}) { 'spec' }
 end
-
-guard :rubocop do
-  watch(%r{.+\.rb$})
-  watch(%r{(?:.+/)?\.rubocop\.yml$}) { |m| File.dirname(m[0]) }
-end

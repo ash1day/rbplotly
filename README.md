@@ -78,6 +78,10 @@ Visit [here](https://nbviewer.jupyter.org/github/ash1day/rbplotly/tree/master/ex
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
 
+### About RuboCop
+
+We don't use RuboCop.
+
 ## Thanks
 
 `rbplotly` is based on [plotly/plotly.py](https://github.com/plotly/plotly.py), so there are a lot of code coming from it.
