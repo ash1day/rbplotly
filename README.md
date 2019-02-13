@@ -1,5 +1,4 @@
 [![Gem Version](https://badge.fury.io/rb/rbplotly.svg)](https://badge.fury.io/rb/rbplotly)
-[![Dependency Status](https://gemnasium.com/badges/github.com/ash1day/rbplotly.svg)](https://gemnasium.com/github.com/ash1day/rbplotly)
 [![Build Status](https://travis-ci.org/ash1day/rbplotly.svg?branch=master)](https://travis-ci.org/ash1day/rbplotly)
 [![Test Coverage](https://codeclimate.com/github/ash1day/rbplotly/badges/coverage.svg)](https://codeclimate.com/github/ash1day/rbplotly/coverage)
 [![Code Climate](https://codeclimate.com/github/ash1day/rbplotly/badges/gpa.svg)](https://codeclimate.com/github/ash1day/rbplotly)
