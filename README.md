@@ -40,7 +40,11 @@ plot = Plotly::Plot.new(data: data, layout: layout)
 
 plot.layout.height = 300 # You can assign plot's attributes.
 
+# If your env has web browser
 plot.generate_html(path: './line_chart.html')
+
+# If your env does NOT have web browser
+#plot.generate_html(path: './line_chart.html', open: false)
 ```
 
 <img src="./docs/images/line_chart.png" width="400">
