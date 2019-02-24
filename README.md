@@ -65,6 +65,7 @@ plot.show
 
 - [Basic Usage](https://nbviewer.jupyter.org/github/ash1day/rbplotly/blob/master/examples/Basic%20Usage.ipynb)
 - [Bar Charts](https://nbviewer.jupyter.org/github/ash1day/rbplotly/blob/master/examples/Bar%20%20Charts.ipynb)
+- [Box Plots](https://nbviewer.jupyter.org/github/ash1day/rbplotly/blob/master/examples/Box%20Plots.ipynb)
 - [Scatter Plots](https://nbviewer.jupyter.org/github/ash1day/rbplotly/blob/master/examples/Scatter%20Plots.ipynb)
 - [Line Charts](https://nbviewer.jupyter.org/github/ash1day/rbplotly/blob/master/examples/Line%20charts.ipynb)
 - [Pie Charts](https://nbviewer.jupyter.org/github/ash1day/rbplotly/blob/master/examples/Pie%20Charts.ipynb)
