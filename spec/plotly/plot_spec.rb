@@ -37,35 +37,35 @@ describe Plotly::Plot do
     end
   end
 
-  describe '#download_image' do
-    let(:username) { ENV['PLOTLY_USERNAME'] }
-    let(:api_key)  { ENV['PLOTLY_API_KEY'] }
-    let(:path)     { TMP_DIR + 'scatter.png' }
-
-    context 'with instantiated client' do
-      let(:client) { Plotly::Client.new(username, api_key) }
-      it 'downloads image' do
-        plot.download_image(path: path, client: client)
-
-        generated_image = open(path).read
-        expect(generated_image).not_to include('errors')
-      end
-    end
-
-    context 'with no client' do
-      it 'raises error' do
-        expect { plot.download_image(path: path) }.to raise_error(RuntimeError)
-      end
-    end
-
-    context 'with default client' do
-      it 'downloads image' do
-        Plotly.auth(username, api_key)
-        plot.download_image(path: path, height: 300, width: 500, scale: 1)
-
-        generated_image = open(path).read
-        expect(generated_image).not_to include('errors')
-      end
-    end
-  end
+#  describe '#download_image' do
+#    let(:username) { ENV['PLOTLY_USERNAME'] }
+#    let(:api_key)  { ENV['PLOTLY_API_KEY'] }
+#    let(:path)     { TMP_DIR + 'scatter.png' }
+#
+#    context 'with instantiated client' do
+#      let(:client) { Plotly::Client.new(username, api_key) }
+#      it 'downloads image' do
+#        plot.download_image(path: path, client: client)
+#
+#        generated_image = open(path).read
+#        expect(generated_image).not_to include('errors')
+#      end
+#    end
+#
+#    context 'with no client' do
+#      it 'raises error' do
+#        expect { plot.download_image(path: path) }.to raise_error(RuntimeError)
+#      end
+#    end
+#
+#    context 'with default client' do
+#      it 'downloads image' do
+#        Plotly.auth(username, api_key)
+#        plot.download_image(path: path, height: 300, width: 500, scale: 1)
+#
+#        generated_image = open(path).read
+#        expect(generated_image).not_to include('errors')
+#      end
+#    end
+#  end
 end
