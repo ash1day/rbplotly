@@ -98,11 +98,12 @@ module Plotly
         value.each_with_index.map { |item, i| object(node.item, item, "#{path}[#{i}]") }
       end
 
-      def leaf(node, value, path)
+      def leaf(node, value, path, attr_path = path)
         if node.array_ok? && array_like?(value)
-          value.to_a.each_with_index { |v, i| scalar(node, v, "#{path}[#{i}]", path) }
+          # Nested arrays too: table cells take one value per cell ([[12, 14], ...]).
+          value.to_a.each_with_index { |v, i| leaf(node, v, "#{path}[#{i}]", attr_path) }
         else
-          scalar(node, value, path, path)
+          scalar(node, value, path, attr_path)
         end
       end
 
@@ -114,7 +115,8 @@ module Plotly
         when "flaglist" then flaglist(node, value, path, attr_path)
         when "boolean"
           invalid!(path, "expected true or false, got #{value.inspect}") unless [true, false].include?(value)
-        when "number", "integer", "angle" then number(node, value, path)
+        when "number", "integer" then number(node, value, path)
+        when "angle" then number(node, value, path) unless value.to_s == "auto"
         end
       end
 
@@ -150,8 +152,13 @@ module Plotly
       def pattern?(value) = value.is_a?(String) && value.length > 1 && value.start_with?("/") && value.end_with?("/")
 
       def flaglist(node, value, path, attr_path)
+        # Extras may be booleans (config.scrollZoom, axis automargin) as well as strings.
+        return if node.extras.include?(value) || node.extras.include?(value.to_s)
+        if [true, false].include?(value)
+          invalid!(path, "#{value} is not allowed for #{attr_path.split(".").last}")
+        end
+
         given = value.to_s
-        return if node.extras.include?(given)
 
         name = attr_path.split(".").last
         given.split("+").each do |flag|

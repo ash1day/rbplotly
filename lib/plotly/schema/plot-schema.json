@@ -50311,6 +50311,18 @@
               }
             }
           },
+          "bargap": {
+            "type": "number",
+            "min": 0,
+            "max": 1
+          },
+          "barmode": {
+            "type": "enumerated",
+            "values": [
+              "stack",
+              "overlay"
+            ]
+          },
           "bgcolor": {
             "type": "color"
           },

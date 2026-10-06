@@ -55,7 +55,16 @@ and run `rake schema:generate` instead of editing it. CI fails if it is out of d
    `rakelib/plotlyjs.rake`.
 3. `bundle exec rake schema:generate plotlyjs:fetch` and read the schema diff for removed or
    renamed attributes; those are breaking changes for users.
-4. `bundle exec rake && bundle exec rake spec:browser gallery`, and look at the gallery.
+4. Validate plotly.js' own test figures and read the rejections for false positives
+   (valid attributes rejected). The mocks also contain deliberately invalid input that
+   plotly.js silently drops, so a rejection is not automatically a bug:
+   ```sh
+   git clone --depth 1 --branch vX.Y.Z --filter=blob:none --sparse https://github.com/plotly/plotly.js.git /tmp/plotly.js
+   git -C /tmp/plotly.js sparse-checkout set test/image/mocks
+   MOCKS=/tmp/plotly.js/test/image/mocks bundle exec rake schema:mocks
+   ```
+   With 4.1.2, 1204 of 1308 mocks pass; every remaining rejection is input plotly.js ignores.
+5. `bundle exec rake && bundle exec rake spec:browser gallery`, and look at the gallery.
 
 ## Releasing
 

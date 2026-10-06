@@ -21,12 +21,15 @@ class SchemaPruner
 
     layout = prune_object(@schema.fetch("layout").fetch("layoutAttributes"))
     # Trace modules contribute layout attributes (bar adds barmode, scatter adds scattermode...).
+    # Those of traces drawn on a subplot type (barpolar on polar) belong to that subplot.
     @schema.fetch("traces").each_value do |trace|
+      subplot = (trace["categories"] || []).find { |c| layout["attrs"].dig(c, "subplot") }
+      target = subplot ? layout["attrs"][subplot] : layout
       (trace["layoutAttributes"] || {}).each do |name, attr|
-        layout["attrs"][name] ||= prune(attr)
+        target["attrs"][name] ||= prune(attr)
       end
+      target["attrs"] = target["attrs"].sort.to_h
     end
-    layout["attrs"] = layout["attrs"].sort.to_h
 
     {
       "traces" => traces,

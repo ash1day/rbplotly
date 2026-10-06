@@ -73,6 +73,23 @@ RSpec.describe Plotly::Attributes do
       )
     end
 
+    it "accepts true and false where a flaglist lists them as extras" do
+      expect { build(schema.config, {scrollZoom: true, displayModeBar: false}) }.not_to raise_error
+      expect { build(schema.layout, {xaxis_automargin: false, yaxis_automargin: "left+right"}) }.not_to raise_error
+    end
+
+    it "checks nested arrays element by element, as for per-cell table formatting" do
+      table = schema.trace("table")
+      expect { build(table, {cells: {values: [[1, 2]], font: {size: [[12, 14]]}}}) }.not_to raise_error
+      expect(error_for(table, {cells: {font: {size: [[12, "big"]]}}})).to include('cells.font.size[0][1]: expected a number, got "big"')
+    end
+
+    it "accepts \"auto\" for angles, as plotly.js does" do
+      expect { build(schema.layout, {xaxis_tickangle: "auto"}) }.not_to raise_error
+      expect { build(schema.layout, {xaxis_tickangle: -45}) }.not_to raise_error
+      expect(error_for(schema.layout, {xaxis_tickangle: "steep"})).to include("expected a number")
+    end
+
     it "checks booleans and numbers, including their range" do
       expect(error_for(scatter, {showlegend: "yes"})).to include("showlegend: expected true or false")
       expect(error_for(scatter, {visible: "yes"})).to include(%(visible: "yes" is not one of true, false, "legendonly"))

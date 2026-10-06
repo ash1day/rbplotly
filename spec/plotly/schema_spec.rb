@@ -34,6 +34,11 @@ RSpec.describe Plotly::Schema do
     expect(schema.layout.child("barmode").values).to include("stack", "group")
   end
 
+  it "puts layout attributes of polar traces under the polar subplot" do
+    expect(schema.layout.child("polar").child("barmode").values).to include("stack", "overlay")
+    expect(schema.layout.child("polar2").child("bargap")).to be_leaf
+  end
+
   it "describes arrays of objects such as annotations" do
     annotations = schema.layout.child("annotations")
     expect(annotations).to be_array

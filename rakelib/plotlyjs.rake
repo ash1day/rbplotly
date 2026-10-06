@@ -54,6 +54,15 @@ namespace :schema do
     puts "Wrote #{SCHEMA_PATH} (plotly.js #{Plotly::PLOTLY_JS_VERSION})"
   end
 
+  desc "Validate plotly.js' test mocks (MOCKS=path/to/test/image/mocks) and list what is rejected"
+  task :mocks do
+    require_relative "support/mock_sweep"
+    dir = ENV.fetch("MOCKS") { abort "Set MOCKS to plotly.js' test/image/mocks for v#{Plotly::PLOTLY_JS_VERSION}" }
+    total, rejected = MockSweep.run(dir)
+    puts "#{total - rejected.values.sum(&:size)} of #{total} mocks pass validation"
+    rejected.sort_by { |_, files| -files.size }.each { |reason, files| puts format("%4d  %s", files.size, reason) }
+  end
+
   desc "Fail if #{SCHEMA_PATH} is not what `rake schema:generate` would write"
   task :check do
     next if File.read(SCHEMA_PATH) == pruned_schema_json
