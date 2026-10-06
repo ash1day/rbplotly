@@ -75,7 +75,7 @@ module Plotly
       end
 
       def value(node, value, path)
-        return value if node.nil?
+        return value if node.nil? || value.nil? # nil unsets an attribute, nested ones included
         return object(node, value, path) if node.object? && value.is_a?(Hash)
 
         if node.object?

@@ -69,6 +69,14 @@ RSpec.describe Plotly::Figure do
       )
     end
 
+    it "clears nested settings given nil, which plotly.js reads as unset" do
+      fig = described_class.new(layout: {title_text: "x", xaxis_type: :log}).add_bar(y: [1], marker_color: "red")
+      fig.update_layout(title: nil, xaxis: nil).update_traces(marker: nil)
+      expect(fig.layout).to eq("title" => nil, "xaxis" => nil)
+      expect(fig.data.first["marker"]).to be_nil
+      expect(fig.to_json).to include('"title":null')
+    end
+
     it "leaves the layout untouched when the update is invalid" do
       fig = described_class.new(layout: {height: 300})
       expect { fig.update_layout(height: 200, barmode: :piled) }.to raise_error(Plotly::ValidationError)

@@ -5,6 +5,7 @@ source "https://rubygems.org"
 gemspec
 
 gem "bigdecimal" # used by the specs; a bundled gem since Ruby 3.4
+gem "irb" # bin/console; a bundled gem since Ruby 4.0
 gem "rake", "~> 13.2"
 gem "rspec", "~> 3.13"
 gem "standard", "~> 1.40"
