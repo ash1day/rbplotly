@@ -1,4 +1,3 @@
-require 'plotly/version'
-require 'plotly/client'
-require 'plotly/util'
-require 'plotly/plot'
+# frozen_string_literal: true
+
+require_relative "plotly"

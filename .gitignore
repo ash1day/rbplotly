@@ -1,11 +1,12 @@
 /.bundle/
 /.yardoc
 /Gemfile.lock
-/_yardoc/
-/coverage/
 /doc/
 /pkg/
-/spec/reports/
 /tmp/
+/site/
+/coverage/
+.rspec_status
 
-.ipynb_checkpoints
+# Downloaded by `rake plotlyjs:fetch` (checksum-pinned); shipped in the gem, not in git.
+/lib/plotly/assets/plotly.min.js

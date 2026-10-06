@@ -1,0 +1,4 @@
+ruby_version: 3.3
+ignore:
+  - "pkg/**/*"
+  - "tmp/**/*"

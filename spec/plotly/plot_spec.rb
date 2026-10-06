@@ -1,71 +1,24 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Plotly::Plot do
-  let(:data) do
-    n = 100
+RSpec.describe Plotly::Plot do
+  it "keeps 0.x code working while pointing to Plotly::Figure" do
+    plot = nil
+    expect {
+      plot = described_class.new(data: [{x: [0, 1], y: [1, 0], type: :scatter, mode: :lines}], layout: {width: 500})
+    }.to output(/Plotly::Plot is deprecated.*Plotly::Figure/).to_stderr
 
-    x  = (1...n).map { |i| i.to_f / n }
-    y0 = (1...n).map { rand(-2.0...2.0) + 5 }
-    y1 = (1...n).map { rand(-2.0...2.0) }
-    y2 = (1...n).map { rand(-2.0...2.0) - 5 }
-
-    trace0 = { x: x, y: y0, type: 'scatter', mode: 'markers' }
-    trace1 = trace0.merge(y: y1, mode: 'markers+lines')
-    trace2 = trace0.merge(y: y2, mode: 'lines')
-
-    [trace0, trace1, trace2]
+    expect(plot).to be_a(Plotly::Figure)
+    expect(plot.layout).to eq("width" => 500)
   end
 
-  let(:plot) { Plotly::Plot.new(data: data) }
-
-  it 'can be instantiated' do
-    expect(plot).to be_a Plotly::Plot
-  end
-
-  describe '#layout=' do
-    it 'sets layout' do
-      plot.layout = { xaxis: { title: 'x_title' } }
-    end
-  end
-
-  describe '#generate_html' do
-    it 'generates html which includes plotly.js' do
-      path = TMP_DIR + 'scatter_and_line.html'
-      plot.generate_html(path: path, open: false)
-      generated_html = open(path).read
-      expect(generated_html).to include('plotly.js')
-    end
-  end
-
-  describe '#download_image' do
-    let(:username) { ENV['PLOTLY_USERNAME'] }
-    let(:api_key)  { ENV['PLOTLY_API_KEY'] }
-    let(:path)     { TMP_DIR + 'scatter.png' }
-
-    context 'with instantiated client' do
-      let(:client) { Plotly::Client.new(username, api_key) }
-      it 'downloads image' do
-        plot.download_image(path: path, client: client)
-
-        generated_image = open(path).read
-        expect(generated_image).not_to include('errors')
-      end
-    end
-
-    context 'with no client' do
-      it 'raises error' do
-        expect { plot.download_image(path: path) }.to raise_error(RuntimeError)
-      end
-    end
-
-    context 'with default client' do
-      it 'downloads image' do
-        Plotly.auth(username, api_key)
-        plot.download_image(path: path, height: 300, width: 500, scale: 1)
-
-        generated_image = open(path).read
-        expect(generated_image).not_to include('errors')
-      end
+  it "maps generate_html to write_html" do
+    plot = nil
+    expect { plot = described_class.new(data: [{y: [1]}]) }.to output.to_stderr
+    Dir.mktmpdir do |dir|
+      path = File.join(dir, "old.html")
+      expect(Plotly::Browser).to receive(:open).with(path)
+      plot.generate_html(path: path)
+      expect(File.read(path)).to include("Plotly.newPlot")
     end
   end
 end

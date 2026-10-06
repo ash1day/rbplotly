@@ -1,35 +1,18 @@
-require 'plotly/data'
-require 'plotly/layout'
-require 'plotly/exportable'
-require 'plotly/offline/exportable'
+# frozen_string_literal: true
 
 module Plotly
-  class Plot
-    include Exportable
-    include Offline::Exportable
-
-    # @!attribute [r] data
-    #   @return [Array] list of Plotly::Data objects
-    # @!attribute [r] layout
-    #   @return [Plotly::Layout]
-    attr_reader :data, :layout
-
-    # @option data [Array] list of Hash or Plotly::Data objects
-    # @option layout [Hash or Plotly::Layout]
-    def initialize(data: [], layout: {})
-      @data   = data.map { |d| d.is_a?(Hash) ? Data.new(d) : d }
-      @layout = layout.convert_to(Plotly::Layout)
+  # The 0.x entry point, kept so existing code runs while it moves to {Figure}.
+  # @deprecated Use {Figure}; `generate_html(path:, open:)` becomes `write_html(path, open:)`.
+  class Plot < Figure
+    def initialize(data: [], layout: {}, **options)
+      warn "Plotly::Plot is deprecated and will be removed in rbplotly 2.0; use Plotly::Figure " \
+        "(generate_html(path:) is now write_html(path))", uplevel: 1
+      super
     end
 
-    # @param data [Array] list of Hash or Plotly::Data objects
-    def data=(data)
-      raise unless data.is_a?(Array)
-      @data = data.map { |d| d.convert_to(Plotly::Data) }
-    end
-
-    # @param layout [Hash or Plotly::Layout]
-    def layout=(layout)
-      @layout = layout.convert_to(Plotly::Layout)
+    # @deprecated Use {Figure#write_html}.
+    def generate_html(path: "plot.html", open: true)
+      write_html(path, open: open)
     end
   end
 end
