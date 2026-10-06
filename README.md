@@ -3,42 +3,87 @@
 [![Gem Version](https://img.shields.io/gem/v/rbplotly)](https://rubygems.org/gems/rbplotly)
 [![CI](https://github.com/ash1day/rbplotly/actions/workflows/ci.yml/badge.svg)](https://github.com/ash1day/rbplotly/actions/workflows/ci.yml)
 
-Interactive [Plotly.js](https://plotly.com/javascript/) charts from Ruby.
+**Interactive [Plotly.js](https://plotly.com/javascript/) charts from Ruby.** Hover, zoom and
+pan in the browser, from a few lines of plain Ruby, in a single HTML file you can send anyone.
 
-- **Every chart type and attribute plotly.js has.** Figures are plain Ruby hashes, checked
-  against the schema of the plotly.js release rbplotly ships with (4.1.2: 47 trace types).
-- **Mistakes fail where you wrote them**, with the path and a suggestion, instead of a chart
-  that silently draws nothing.
-- **HTML you can hand to anyone.** One self-contained file that works offline, a fragment for
-  a Rails view, or inline output in Jupyter. No account, API key or server.
+<img src="docs/images/hero.gif" width="800" alt="Hovering over a line chart made with rbplotly shows the values for each day; dragging zooms into a range and a double-click zooms back out">
 
-<img src="docs/images/subplots.png" width="720" alt="A dashboard with a bar chart, a line chart, a donut chart and an area chart, made with rbplotly">
+## Why rbplotly
 
-**[Gallery: every example next to its code](https://ash1day.github.io/rbplotly/)**
-
-## Installation
-
-```sh
-gem install rbplotly
-```
-
-or add `gem "rbplotly"` to your Gemfile. Requires Ruby 3.3 or later.
+- **All of plotly.js, nothing invented.** Every chart type (47 of them, from bar charts to 3D
+  surfaces, Sankey diagrams and maps) and every attribute in the
+  [plotly.js reference](https://plotly.com/javascript/reference/) works as written there.
+  Plotly publishes no Ruby library; rbplotly is that missing layer.
+- **Mistakes stop at the line that made them.** Figures are checked against the schema of the
+  bundled plotly.js release, so a typo raises an error with the attribute path and a
+  suggestion instead of producing a chart that silently ignores it.
+- **Nothing to sign up for.** Output is HTML: one self-contained file that works offline, a
+  fragment for a Rails view, or inline output in Jupyter. No account, API key or server.
 
 ## Quick start
+
+```sh
+gem install rbplotly   # Ruby 3.3+; or add gem "rbplotly" to your Gemfile
+```
 
 ```ruby
 require "rbplotly"
 
+weeks = (1..12).to_a
+plan = [12, 14, 13, 17, 16, 19, 21, 20, 23, 25, 24, 28]
+actual = [10, 15, 13, 18, 17, 18, 23, 22, 22, 27, 26, 31]
+
 fig = Plotly::Figure.new
-  .add_scatter(x: [1, 2, 3, 4], y: [10, 15, 13, 17], mode: :"lines+markers", name: "Actual")
-  .add_bar(x: [1, 2, 3, 4], y: [12, 14, 12, 18], name: "Plan", opacity: 0.5)
-  .update_layout(title_text: "Weekly sales", xaxis_title_text: "Week", yaxis_title_text: "Units")
+  .add_bar(x: weeks, y: plan, name: "Plan", marker_color: "#c7d2fe")
+  .add_scatter(x: weeks, y: actual, name: "Actual", mode: :"lines+markers", line_width: 3)
+  .update_layout(title_text: "Weekly sales", xaxis_title_text: "Week",
+    yaxis_title_text: "Units", hovermode: "x unified")
 
 fig.write_html("sales.html") # add open: true to open it in your browser
 ```
 
+<img src="docs/images/quick-start.png" width="800" alt="The chart the code above draws: planned sales as light bars and actual sales as a line over twelve weeks">
+
 `sales.html` is a single file with plotly.js embedded: open it offline, attach it to an email,
 or publish it as is.
+
+## Mistakes stop where you made them
+
+```ruby
+fig.add_scatter(x: [1, 2], y: [3, 1], mode: :line)
+# => Plotly::ValidationError: data[2].mode: "line" is not a flag of mode. Did you mean "lines"?
+#    Join "lines", "markers", "text" with "+", or use "none"
+fig.update_layout(barmode: :stacked)
+# => Plotly::ValidationError: layout.barmode: "stacked" is not one of "stack", "group",
+#    "overlay", "relative". Did you mean "stack"?
+fig.add_bar(y: [1], marker_colour: "red")
+# => Plotly::ValidationError: data[2].marker.colour: marker has no attribute "colour".
+#    Did you mean "color"?
+fig.update_layout(title: "Sales")
+# => Plotly::ValidationError: layout.title: expected a Hash of title attributes, got "Sales".
+#    Plotly.js no longer accepts a plain string here:
+#    use title: {text: "Sales"} or title_text: "Sales"
+```
+
+Validation covers attribute names, enumerated values, flag lists, booleans and number ranges.
+Colors, data arrays and free-form values are passed through. If you need an attribute from a
+newer plotly.js than the bundled one, turn validation off for that figure:
+`Plotly::Figure.new(validate: false)`.
+
+## Gallery
+
+<table>
+  <tr>
+    <td><a href="https://ash1day.github.io/rbplotly/#surface"><img src="docs/images/surface.png" width="400" alt="A 3D surface plot"></a></td>
+    <td><a href="https://ash1day.github.io/rbplotly/#sankey"><img src="docs/images/sankey.png" width="400" alt="A Sankey diagram of visitor flows"></a></td>
+  </tr>
+  <tr>
+    <td><a href="https://ash1day.github.io/rbplotly/#geo"><img src="docs/images/geo.png" width="400" alt="Cities sized by population on a world map"></a></td>
+    <td><a href="https://ash1day.github.io/rbplotly/#distributions"><img src="docs/images/distributions.png" width="400" alt="Histograms and box plots of response times sharing an axis"></a></td>
+  </tr>
+</table>
+
+**[See every example running, next to its code →](https://ash1day.github.io/rbplotly/)**
 
 ## Building figures
 
@@ -55,7 +100,8 @@ fig = Plotly::Figure.new(
 # One add_<type> helper per trace type: add_scatter, add_bar, add_heatmap, add_sankey, ...
 fig.add_scatter(x: %w[A B C], y: [2, 2, 2], mode: :lines, name: "Target")
 
-# Underscores reach into nested attributes: marker_line_width: 2 is marker: {line: {width: 2}}
+# Underscores reach into nested attributes:
+# marker_line_width: 2 is marker: {line: {width: 2}}
 fig.update_traces({marker_color: "teal", marker_line_width: 1}, selector: {type: :bar})
 fig.update_layout(yaxis_range: [0, 4], legend_orientation: "h")
 ```
@@ -66,35 +112,13 @@ Updates merge into what is already there.
 ### Subplots
 
 ```ruby
-fig = Plotly.make_subplots(rows: 1, cols: 2, subplot_titles: ["Revenue", "Users"], shared_yaxes: false)
+fig = Plotly.make_subplots(rows: 1, cols: 2, subplot_titles: ["Revenue", "Users"])
 fig.add_bar(x: %w[Q1 Q2 Q3], y: [10, 12, 15], row: 1, col: 1)
 fig.add_scatter(x: %w[Q1 Q2 Q3], y: [200, 260, 310], row: 1, col: 2)
 fig.update_yaxes({title_text: "USD (M)"}, row: 1, col: 1)
 ```
 
 `shared_xaxes:` and `shared_yaxes:` link the axes of a column or row so they zoom together.
-
-### When something is wrong
-
-```ruby
-fig = Plotly::Figure.new
-fig.add_scatter(x: [1, 2], y: [3, 1], mode: :line)
-# => Plotly::ValidationError: data[0].mode: "line" is not a flag of mode. Did you mean "lines"?
-#    Join "lines", "markers", "text" with "+", or use "none"
-```
-
-```ruby
-fig.add_bar(y: [1], marker_colour: "red")
-# => Plotly::ValidationError: data[0].marker.colour: marker has no attribute "colour". Did you mean "color"?
-fig.update_layout(title: "Sales")
-# => Plotly::ValidationError: layout.title: expected a Hash of title attributes, got "Sales".
-#    Plotly.js no longer accepts a plain string here: use title: {text: "Sales"} or title_text: "Sales"
-```
-
-Validation covers attribute names, enumerated values, flag lists, booleans and number ranges.
-Colors, data arrays and free-form values are passed through. If you need an attribute from a
-newer plotly.js than the bundled one, turn validation off for that figure:
-`Plotly::Figure.new(validate: false)`.
 
 ## Output
 

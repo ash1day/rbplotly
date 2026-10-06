@@ -1,27 +1,32 @@
 # frozen_string_literal: true
 
-README_IMAGES = %w[subplots line distributions surface].freeze
+README_THUMBNAILS = %w[surface sankey geo distributions].freeze
 
-desc "Screenshot examples for the README into docs/images/ (needs Chrome)"
+# The figure built by the README's quick start, so its screenshot always matches the code.
+def readme_quick_start_figure
+  code = File.read("README.md")[/^## Quick start\n.*?^```ruby\n(.*?)^```/m, 1]
+  scope = Object.new.instance_eval { binding }
+  scope.eval(code.sub(/^fig\.write_html.*$/, ""), "README.md")
+  scope.local_variable_get(:fig)
+end
+
+desc "Make the README's screenshots and hero GIF in docs/images/ (needs Chrome and ffmpeg)"
 task "docs:images" => "plotlyjs:fetch" do
-  require "ferrum"
-  require "fileutils"
-  require_relative "support/gallery"
+  require_relative "support/readme_media"
 
   FileUtils.mkdir_p("docs/images")
-  examples = Gallery.examples.select { |ex| README_IMAGES.include?(ex.name) }
-  browser = Ferrum::Browser.new(headless: true, timeout: 60, window_size: [1000, 800])
+  examples = Gallery.examples.to_h { |ex| [ex.name, ex.figure] }
   Dir.mktmpdir do |dir|
-    examples.each do |ex|
-      path = ex.figure.update_layout(width: 900, height: 560)
-        .write_html(File.join(dir, "#{ex.name}.html"), width: 900, height: 560)
-      browser.go_to("file://#{path}")
-      sleep 0.1 until browser.evaluate("!!document.querySelector('.plotly-graph-div .main-svg')")
-      sleep 1 # let WebGL traces (surface) finish their first frame
-      browser.screenshot(path: "docs/images/#{ex.name}.png", selector: ".plotly-graph-div")
-      puts "Wrote docs/images/#{ex.name}.png"
+    media = ReadmeMedia.new(dir)
+    media.record_gif(examples.fetch("line"), "docs/images/hero.gif", width: 800, height: 460)
+    puts "Wrote docs/images/hero.gif"
+    media.screenshot(readme_quick_start_figure, "docs/images/quick-start.png", width: 800, height: 420)
+    puts "Wrote docs/images/quick-start.png"
+    README_THUMBNAILS.each do |name|
+      media.screenshot(examples.fetch(name), "docs/images/#{name}.png", width: 900, height: 560)
+      puts "Wrote docs/images/#{name}.png"
     end
+  ensure
+    media&.close
   end
-ensure
-  browser&.quit
 end

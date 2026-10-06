@@ -8,7 +8,7 @@ RSpec.describe "README.md" do
   blocks = readme.scan(/^```ruby\n(.*?)^```/m).flatten
 
   it "has Ruby examples" do
-    expect(blocks.size).to be >= 5
+    expect(blocks.size).to be >= 4
   end
 
   it "runs every Ruby example as documented" do

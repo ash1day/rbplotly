@@ -4,8 +4,10 @@ require "rbplotly"
 
 rng = Random.new(1)
 days = (Date.new(2026, 1, 1)..Date.new(2026, 6, 30)).to_a
-users = days.each_with_index.map { |day, i| 1200 + 4 * i + 300 * Math.sin(i / 9.0) + ((day.saturday? || day.sunday?) ? -250 : 0) + rng.rand(-60..60) }
-average = users.each_index.map { |i| users[[0, i - 6].max..i].sum / (i - [0, i - 6].max + 1) }
+users = days.each_with_index.map do |day, i|
+  (1200 + 4 * i + 300 * Math.sin(i / 9.0) + ((day.saturday? || day.sunday?) ? -250 : 0) + rng.rand(-60..60)).round
+end
+average = users.each_index.map { |i| (users[[0, i - 6].max..i].sum.to_f / (i - [0, i - 6].max + 1)).round }
 
 fig = Plotly::Figure.new
   .add_scatter(x: days, y: users, mode: :lines, name: "Daily", line_color: "rgba(99, 110, 250, 0.35)")
