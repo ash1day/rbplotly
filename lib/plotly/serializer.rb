@@ -8,6 +8,7 @@ module Plotly
   module Serializer
     module_function
 
+    # Characters escaped in JSON so it can be embedded in HTML.
     HTML_UNSAFE = {"<" => "\\u003c", ">" => "\\u003e", "&" => "\\u0026"}.freeze
 
     # @return [String] JSON that is safe to place inside an HTML <script> element: `<`, `>`

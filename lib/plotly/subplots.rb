@@ -36,6 +36,7 @@ module Plotly
     figure
   end
 
+  # Grid layout behind {Plotly.make_subplots}.
   # @api private
   module Subplots
     Cell = Struct.new(:row, :col, :index, :x_domain, :y_domain) do

@@ -54,7 +54,9 @@ RSpec.describe Plotly::Attributes do
     end
 
     it "rejects values outside an enumeration" do
-      expect(error_for(schema.layout, {barmode: :stacked})).to include('barmode: "stacked" is not one of "stack", "group"')
+      expect(error_for(schema.layout, {barmode: :stacked})).to eq(
+        'data[0].barmode: "stacked" is not one of "stack", "group", "overlay", "relative". Did you mean "stack"?'
+      )
     end
 
     it "accepts symbols and enumerations given by pattern" do
@@ -65,7 +67,10 @@ RSpec.describe Plotly::Attributes do
     it "checks each flag of a flaglist" do
       expect { build(scatter, {mode: :"markers+lines"}) }.not_to raise_error
       expect { build(scatter, {mode: "none"}) }.not_to raise_error
-      expect(error_for(scatter, {mode: "line+markers"})).to include('"line" is not a flag of mode')
+      expect(error_for(scatter, {mode: "line+markers"})).to eq(
+        'data[0].mode: "line" is not a flag of mode. Did you mean "lines"? ' \
+        'Join "lines", "markers", "text" with "+", or use "none"'
+      )
     end
 
     it "checks booleans and numbers, including their range" do

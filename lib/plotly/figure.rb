@@ -129,7 +129,14 @@ module Plotly
       write_html(File.join(Dir.tmpdir, "rbplotly-#{SecureRandom.hex(8)}.html"), open: true)
     end
 
-    # IRuby's rich display hook.
+    # IRuby's display hook. IRuby 0.8 prefers it to {#to_html}, whose output would run before
+    # plotly.js loads in a notebook.
+    # @return [Array(Hash{String => String}, Hash)] formats and metadata
+    def to_iruby_mimebundle(include: [])
+      [{"text/html" => HTML.notebook(self)}, {}]
+    end
+
+    # IRuby's display hook in versions before 0.8.
     # @return [Array(String, String)]
     def to_iruby = ["text/html", HTML.notebook(self)]
 
@@ -139,11 +146,13 @@ module Plotly
     # @return [String] the figure as plotly.js JSON (config is not included, as in plotly.py)
     def to_json(*) = Serializer.dump(to_h)
 
+    # @return [String] trace types and layout keys, without the data
     def inspect
       "#<#{self.class.name} data=[#{@data.map { |t| t["type"] }.join(", ")}] layout=[#{@layout.keys.join(", ")}]>"
     end
 
     # @api private
+    # @param grid [Subplots::Grid] set by {Plotly.make_subplots}
     def subplot_grid=(grid)
       @grid = grid
     end

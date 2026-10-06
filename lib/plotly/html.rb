@@ -6,8 +6,11 @@ require "securerandom"
 module Plotly
   # Renders figures as HTML.
   module HTML
+    # The plotly.js build that `include_plotlyjs: :cdn` and notebook output load.
     CDN_URL = "https://cdn.plot.ly/plotly-#{PLOTLY_JS_VERSION}.min.js"
+    # The same build, bundled in the gem for `include_plotlyjs: :inline`.
     BUNDLE_PATH = File.expand_path("assets/plotly.min.js", __dir__)
+    # Config applied under the figure's own config.
     DEFAULT_CONFIG = {"responsive" => true}.freeze
 
     module_function
@@ -19,13 +22,15 @@ module Plotly
     # @param full_html [Boolean] a whole document instead of a fragment
     # @param div_id [String, nil] id of the chart element; random by default
     # @param width [Integer, String, nil] element width (Integer means pixels); 100% by default
-    # @param height [Integer, String, nil] element height; fills the container by default
+    # @param height [Integer, String, nil] element height; by default the layout height, else
+    #   450px for a fragment (a percentage would collapse in a container of automatic height)
+    #   and the whole window for a full document
     # @return [String]
     def render(figure, include_plotlyjs: :cdn, full_html: false, div_id: nil, width: nil, height: nil)
       id = div_id || "rbplotly-#{SecureRandom.uuid}"
       body = [
         plotlyjs_tag(include_plotlyjs),
-        %(<div id="#{CGI.escapeHTML(id)}" class="plotly-graph-div" style="#{style(width, height)}"></div>),
+        %(<div id="#{CGI.escapeHTML(id)}" class="plotly-graph-div" style="#{style(width, height || default_height(figure, full_html))}"></div>),
         "<script>\n#{draw_call(figure, id)}\n</script>"
       ].compact.join("\n")
       full_html ? document(figure, body) : body
@@ -37,7 +42,7 @@ module Plotly
     def notebook(figure)
       id = "rbplotly-#{SecureRandom.uuid}"
       <<~HTML
-        <div id="#{id}" class="plotly-graph-div" style="height:100%;width:100%;"></div>
+        <div id="#{id}" class="plotly-graph-div" style="#{style(nil, default_height(figure, false))}"></div>
         <script>
         (function () {
           var src = "#{CDN_URL}";
@@ -58,6 +63,7 @@ module Plotly
       HTML
     end
 
+    # @api private
     def draw_call(figure, id)
       config = DEFAULT_CONFIG.merge(figure.config)
       args = [id, figure.data, figure.layout, config].map { |arg| Serializer.dump(arg) }
@@ -85,7 +91,14 @@ module Plotly
     end
 
     def style(width, height)
-      "height:#{length(height || "100%")};width:#{length(width || "100%")};"
+      "height:#{length(height)};width:#{length(width || "100%")};"
+    end
+
+    def default_height(figure, full_html)
+      layout_height = figure.layout["height"]
+      return layout_height.round if layout_height.is_a?(Numeric)
+
+      full_html ? "100%" : 450
     end
 
     def length(value) = value.is_a?(Integer) ? "#{value}px" : CGI.escapeHTML(value.to_s)
@@ -108,6 +121,8 @@ module Plotly
         </html>
       HTML
     end
+
+    private_class_method :plotlyjs_tag, :script_src, :bundle, :style, :default_height, :length, :document
   end
 
   # Opens files in the desktop's default browser.
@@ -118,7 +133,8 @@ module Plotly
     def open(path)
       command = case RbConfig::CONFIG["host_os"]
       when /darwin/ then ["open", path]
-      when /mswin|mingw|cygwin/ then ["cmd", "/c", "start", "", path]
+      # Not `cmd /c start`: cmd.exe would interpret &, | and ^ in the file name.
+      when /mswin|mingw|cygwin/ then ["explorer.exe", path]
       else ["xdg-open", path]
       end
       Process.detach(Process.spawn(*command, out: File::NULL, err: File::NULL))

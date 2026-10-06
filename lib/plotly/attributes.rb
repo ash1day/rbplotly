@@ -26,6 +26,7 @@ module Plotly
       end
     end
 
+    # Walks one attribute hash against its schema node.
     # @api private
     class Builder
       def initialize(validate)
@@ -118,8 +119,14 @@ module Plotly
         given = value.is_a?(Symbol) ? value.to_s : value
         return if node.values.any? { |allowed| allowed_value?(allowed, given) }
 
-        listed = node.values.reject { |v| pattern?(v) }.map(&:inspect).join(", ")
-        invalid!(path, "#{given.inspect} is not one of #{listed}")
+        listed = node.values.reject { |v| pattern?(v) }
+        message = "#{given.inspect} is not one of #{listed.map(&:inspect).join(", ")}"
+        if given.is_a?(String)
+          words = listed.grep(String)
+          suggestion = DidYouMean::SpellChecker.new(dictionary: words).correct(given).first
+          message += ". Did you mean #{suggestion.inspect}?" if suggestion
+        end
+        invalid!(path, message)
       end
 
       def allowed_value?(allowed, given)
@@ -138,9 +145,16 @@ module Plotly
         given.split("+").each do |flag|
           next if node.flags.include?(flag)
 
-          choices = node.flags.map(&:inspect).join(", ")
-          extras = node.extras.empty? ? "" : ", or one of #{node.extras.map(&:inspect).join(", ")}"
-          invalid!(path, "#{flag.inspect} is not a flag of #{name}. Join #{choices} with \"+\"#{extras}")
+          suggestion = DidYouMean::SpellChecker.new(dictionary: node.flags).correct(flag).first
+          message = "#{flag.inspect} is not a flag of #{name}."
+          message += " Did you mean #{suggestion.inspect}?" if suggestion
+          message += " Join #{node.flags.map(&:inspect).join(", ")} with \"+\""
+          message += case node.extras.size
+          when 0 then ""
+          when 1 then ", or use #{node.extras.first.inspect}"
+          else ", or use one of #{node.extras.map(&:inspect).join(", ")}"
+          end
+          invalid!(path, message)
         end
       end
 

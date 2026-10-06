@@ -47,6 +47,16 @@ RSpec.describe "HTML output" do
       expect(html).to include(%(id="a&quot;b"))
     end
 
+    it "gives a fragment the layout height, or 450px, so it has room in a container of automatic height" do
+      expect(fig.to_html).to include('style="height:450px;width:100%;"')
+      expect(fig.update_layout(height: 320).to_html).to include('style="height:320px;width:100%;"')
+      expect(fig.to_iruby.last).to include('style="height:320px;width:100%;"')
+    end
+
+    it "fills the window in a full document unless the layout sets a height" do
+      expect(Plotly::Figure.new.to_html(full_html: true)).to include('style="height:100%;width:100%;"')
+    end
+
     it "sets the element size when width or height is given" do
       expect(fig.to_html(height: 300)).to include('style="height:300px;width:100%;"')
       expect(fig.to_html(width: "50%", height: "20em")).to include('style="height:20em;width:50%;"')
@@ -93,6 +103,13 @@ RSpec.describe "HTML output" do
       expect(html).to include(%(var src = "#{cdn}"))
       expect(html).to include("script[data-rbplotly=")
       expect(html).not_to include("require")
+    end
+
+    it "gives IRuby a MIME bundle, which IRuby prefers over #to_html" do
+      formats, metadata = fig.to_iruby_mimebundle(include: [])
+      expect(formats.keys).to eq(["text/html"])
+      expect(formats["text/html"]).to include("script[data-rbplotly=")
+      expect(metadata).to eq({})
     end
 
     it "is displayed with IRuby when running in a notebook" do

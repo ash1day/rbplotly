@@ -38,7 +38,8 @@ RSpec.describe "Rendering in a browser", :browser do
             svg: !!el.querySelector(".main-svg"),
             points: el.querySelectorAll(".point, .bars path, .scatterlayer path.js-line").length,
             xaxisType: el._fullLayout ? el._fullLayout.xaxis && el._fullLayout.xaxis.type : null,
-            width: el.getBoundingClientRect().width
+            width: el.getBoundingClientRect().width,
+            height: Math.round(el.getBoundingClientRect().height)
           };
         })
       JS
@@ -69,8 +70,10 @@ RSpec.describe "Rendering in a browser", :browser do
   end
 
   it "draws a fragment that loads plotly.js from the CDN" do
-    errors = visit("cdn.html", "<p>before</p>#{fig.to_html(height: 300)}<p>after</p>")
-    expect(drawn_charts.first["traces"]).to eq(%w[scatter bar])
+    errors = visit("cdn.html", "<p>before</p>#{fig.to_html}<p>after</p>")
+    chart = drawn_charts.first
+    expect(chart["traces"]).to eq(%w[scatter bar])
+    expect(chart["height"]).to eq(450)
     expect(errors).to eq([])
   end
 
@@ -117,7 +120,9 @@ RSpec.describe "Rendering in a browser", :browser do
           }, 50);
         </script>
       HTML
-      expect(drawn_charts.first["traces"]).to eq(%w[bar])
+      chart = drawn_charts.first
+      expect(chart["traces"]).to eq(%w[bar])
+      expect(chart["height"]).to eq(450)
       expect(errors).to eq([])
     end
   end
