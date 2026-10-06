@@ -78,7 +78,7 @@ newer plotly.js than the bundled one, turn validation off for that figure:
     <td><a href="https://ash1day.github.io/rbplotly/#sankey"><img src="docs/images/sankey.png" width="400" alt="A Sankey diagram of visitor flows"></a></td>
   </tr>
   <tr>
-    <td><a href="https://ash1day.github.io/rbplotly/#geo"><img src="docs/images/geo.png" width="400" alt="Cities sized by population on a world map"></a></td>
+    <td><a href="https://ash1day.github.io/rbplotly/#sunburst"><img src="docs/images/sunburst.png" width="400" alt="A sunburst chart of a budget split by group and team"></a></td>
     <td><a href="https://ash1day.github.io/rbplotly/#distributions"><img src="docs/images/distributions.png" width="400" alt="Histograms and box plots of response times sharing an axis"></a></td>
   </tr>
 </table>
@@ -160,6 +160,12 @@ Any of these can be used where plotly.js expects an array or a value:
   shows the wall-clock time you give it)
 - `Float::NAN` and infinities (written as `null`, which plotly.js draws as a gap)
 - `BigDecimal` and `Rational` (written as floats), Symbols (written as strings)
+
+Map traces that draw country outlines (`scattergeo`, `choropleth`) load them from Plotly's
+CDN. Since plotly.js 3.1 those outlines come from
+[UN Geodata](https://plotly.com/blog/improved-map-accuracy-plotlyjs-un-geodata/), which has
+its own terms of use (attribution to the UN; no commercial use); check them before you publish
+such a map.
 
 ## plotly.js version
 

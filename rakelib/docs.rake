@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-README_THUMBNAILS = %w[surface sankey geo distributions].freeze
+README_THUMBNAILS = %w[surface sankey sunburst distributions].freeze
 
 # The figure built by the README's quick start, so its screenshot always matches the code.
 def readme_quick_start_figure
