@@ -59,6 +59,7 @@ and run `rake schema:generate` instead of editing it. CI fails if it is out of d
 
 ## Releasing
 
-1. Update `Plotly::VERSION` and move the `Unreleased` notes in `CHANGELOG.md` under the version.
-2. Commit, then tag `vX.Y.Z` and push the tag. The release workflow builds the gem (with the
-   bundled plotly.js) and publishes it to RubyGems through trusted publishing.
+1. Update `Plotly::VERSION` and give the version's section in `CHANGELOG.md` its date.
+2. Commit and push to master, then run the **Release** workflow from the Actions tab. It runs
+   the specs, builds the gem with the bundled plotly.js, tags `vX.Y.Z` and publishes to
+   RubyGems through trusted publishing (no API key is stored in the repository).

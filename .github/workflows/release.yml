@@ -1,11 +1,14 @@
 name: Release
 
+# Run from the Actions tab on master after bumping Plotly::VERSION. `rake release` builds the
+# gem (fetching the checksum-pinned plotly.js), tags vX.Y.Z, pushes the tag and publishes the
+# gem through RubyGems trusted publishing.
 on:
-  push:
-    tags: ["v*"]
+  workflow_dispatch:
 
 jobs:
   release:
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     environment: rubygems
     permissions:
@@ -13,12 +16,11 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "4.0"
           bundler-cache: true
-      - name: Tag matches Plotly::VERSION
-        run: test "v$(ruby -Ilib -rplotly/version -e 'print Plotly::VERSION')" = "${GITHUB_REF_NAME}"
       - run: bundle exec rake spec
-      # Builds the gem (fetching the checksum-pinned plotly.js) and pushes it via trusted publishing.
       - uses: rubygems/release-gem@v1
