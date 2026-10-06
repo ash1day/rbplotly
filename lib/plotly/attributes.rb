@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "date"
+require "did_you_mean" # explicit, so suggestions work under --disable-did_you_mean too
 
 module Plotly
   # Turns user-supplied attribute hashes into plotly.js attribute trees.
@@ -169,20 +170,31 @@ module Plotly
         end
       end
 
+      # Follows plotly.js' coercion: named extras ("bold" for font.weight), numeric strings,
+      # and whole floats for integers are accepted.
       def number(node, value, path)
+        return if !value.is_a?(Numeric) && node.extras.include?(value.to_s)
+
         integer = node.type == "integer"
-        ok = integer ? value.is_a?(Integer) : (value.is_a?(Numeric) && !value.is_a?(Complex))
+        number = case value
+        when Complex then nil
+        when Numeric then value
+        when String then Float(value, exception: false)
+        end
+        ok = !number.nil? && (!integer || (number.finite? && number == number.round))
         invalid!(path, "expected #{integer ? "an integer" : "a number"}, got #{value.inspect}") unless ok
 
-        invalid!(path, "#{value} is less than the minimum #{node.min}") if node.min && value < node.min
-        invalid!(path, "#{value} is greater than the maximum #{node.max}") if node.max && value > node.max
+        invalid!(path, "#{value} is less than the minimum #{node.min}") if node.min && number < node.min
+        invalid!(path, "#{value} is greater than the maximum #{node.max}") if node.max && number > node.max
       end
 
       def invalid_object!(node, value, path)
         hint = ""
         if value.is_a?(String) && node.attribute_names.include?("text")
           key = path.split(".").last
-          hint = ". Plotly.js no longer accepts a plain string here: use #{key}: {text: #{value.inspect}} or #{key}_text: #{value.inspect}"
+          underscored = path.split(".").drop(1).join("_")
+          hint = ". Plotly.js no longer accepts a plain string here: use #{key}: {text: #{value.inspect}} " \
+            "or #{underscored}_text: #{value.inspect}"
         end
         raise ValidationError, "#{path}: expected a Hash of #{node.name} attributes, got #{value.inspect}#{hint}"
       end

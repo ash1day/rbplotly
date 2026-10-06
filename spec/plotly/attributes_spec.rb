@@ -86,6 +86,20 @@ RSpec.describe Plotly::Attributes do
       expect(error_for(scatter, {marker_size: Set[4, "big"]})).to include('marker.size[1]: expected a number, got "big"')
     end
 
+    it "accepts the named values some numeric attributes also take, such as font weight" do
+      expect { build(schema.layout, {title_font_weight: "bold", font_weight: 600}) }.not_to raise_error
+      expect(error_for(schema.layout, {font_weight: "heavy"})).to include("font.weight: expected an integer")
+    end
+
+    it "accepts what plotly.js coerces: whole floats for integers and numeric strings for numbers" do
+      expect { build(schema.layout, {font_weight: 600.0, height: "400"}) }.not_to raise_error
+      expect(error_for(schema.layout, {font_weight: 600.5})).to include("expected an integer")
+    end
+
+    it "suggests the underscore form that matches the attribute's full path" do
+      expect(error_for(schema.layout, {xaxis_title: "Time"})).to include('or xaxis_title_text: "Time"')
+    end
+
     it "explains that a string title must now be written as a hash" do
       expect(error_for(schema.layout, {title: "Sales"})).to include('use title: {text: "Sales"} or title_text: "Sales"')
     end

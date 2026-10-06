@@ -27,7 +27,7 @@ RSpec.describe Plotly::Serializer do
   end
 
   it "expands ranges, sets and other array-like objects such as data frame columns" do
-    column = Struct.new(:values) { def to_a = values }.new([3, 4])
+    column = Class.new { def to_a = [3, 4] }.new
     expect(dump({x: 1..3, y: Set[1], z: column})).to eq('{"x":[1,2,3],"y":[1],"z":[3,4]}')
   end
 
@@ -42,7 +42,8 @@ RSpec.describe Plotly::Serializer do
     expect(dump({title: "売上"})).to eq('{"title":"売上"}')
   end
 
-  it "rejects values that have no JSON form" do
+  it "rejects values that have no JSON form, including records that only happen to have #to_a" do
     expect { dump([Object.new]) }.to raise_error(TypeError, /cannot be written as plotly.js JSON/)
+    expect { dump([Struct.new(:a).new(1)]) }.to raise_error(TypeError, /cannot be written as plotly.js JSON/)
   end
 end

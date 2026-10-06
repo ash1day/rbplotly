@@ -119,6 +119,8 @@ fig.update_yaxes({title_text: "USD (M)"}, row: 1, col: 1)
 ```
 
 `shared_xaxes:` and `shared_yaxes:` link the axes of a column or row so they zoom together.
+Traces on x/y axes go on the cell's axes and domain traces (pie, sunburst, ...) fill the cell;
+3D, polar, ternary and map traces cannot be placed by `row:`/`col:` yet.
 
 ## Output
 
@@ -136,7 +138,7 @@ is the layout height, or 450px). Charts resize with their container.
 ### In a Rails view
 
 ```erb
-<%# Load plotly.js once in your layout, then: %>
+<%# Load plotly.js once in your layout, before this (not deferred), then: %>
 <%= raw @figure.to_html(include_plotlyjs: false, height: 400) %>
 ```
 

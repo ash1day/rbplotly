@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "did_you_mean"
+
 module Plotly
   # A plotly.js figure: traces (`data`), `layout` and `config`.
   #
@@ -29,6 +31,8 @@ module Plotly
       @data = []
       @layout = build(schema.layout, layout, "layout")
       @config = build(schema.config, config, "config")
+      raise ArgumentError, "data must be an Array of trace Hashes, got #{data.inspect}" unless data.is_a?(Array)
+
       data.each { |trace| add_trace(trace) }
     end
 
@@ -140,7 +144,8 @@ module Plotly
     # @return [Array(String, String)]
     def to_iruby = ["text/html", HTML.notebook(self)]
 
-    # @return [Hash{String => Object}] `{"data" => [...], "layout" => {...}}`
+    # @return [Hash{String => Object}] `{"data" => [...], "layout" => {...}}`, sharing the
+    #   figure's own Hashes: changing them skips validation, as with {#data} and {#layout}
     def to_h = {"data" => @data, "layout" => @layout}
 
     # @return [String] the figure as plotly.js JSON (config is not included, as in plotly.py)

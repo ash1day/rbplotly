@@ -29,6 +29,7 @@ module Plotly
       when Numeric then plain(value.to_f)
       when Time, DateTime then timestamp(value)
       when Date then value.strftime("%Y-%m-%d")
+      when Struct then unsupported!(value) # a record, even though Struct#to_a exists
       else
         # Ranges, Sets, Enumerators and data frame columns (Numo::NArray, Polars::Series, ...)
         value.respond_to?(:to_a) ? plain(value.to_a) : unsupported!(value)

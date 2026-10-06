@@ -20,6 +20,16 @@ RSpec.describe Plotly::Figure do
         .to raise_error(Plotly::ValidationError, 'data[0].type: "scater" is not a plotly.js trace type. Did you mean "scatter"?')
     end
 
+    it "requires data to be an Array of traces" do
+      expect { described_class.new(data: {type: :bar}) }.to raise_error(ArgumentError, /data must be an Array of trace Hashes/)
+    end
+
+    it "raises validation errors even when Ruby runs without did_you_mean" do
+      script = 'require "rbplotly"; begin; Plotly::Figure.new(layout: {widht: 1}); rescue Plotly::ValidationError => e; print e.message; end'
+      output = IO.popen([RbConfig.ruby, "--disable-did_you_mean", "-I", File.expand_path("../../lib", __dir__), "-e", script], err: [:child, :out], &:read)
+      expect(output).to eq('layout.widht: layout has no attribute "widht". Did you mean "width"?')
+    end
+
     it "validates attributes unless asked not to" do
       expect { described_class.new(layout: {widht: 300}) }.to raise_error(Plotly::ValidationError, /Did you mean "width"/)
       expect(described_class.new(layout: {widht: 300}, validate: false).layout).to eq("widht" => 300)

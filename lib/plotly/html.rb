@@ -58,6 +58,10 @@ module Plotly
             document.head.appendChild(script);
           }
           script.addEventListener("load", function () { draw(window.Plotly); });
+          script.addEventListener("error", function () {
+            var el = document.getElementById("#{id}");
+            if (el) el.textContent = "rbplotly: could not load plotly.js from " + src;
+          });
         })();
         </script>
       HTML
