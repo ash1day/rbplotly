@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "date"
+
 module Plotly
   # Turns user-supplied attribute hashes into plotly.js attribute trees.
   #
@@ -96,8 +98,8 @@ module Plotly
       end
 
       def leaf(node, value, path)
-        if node.array_ok? && value.is_a?(Array)
-          value.each_with_index { |v, i| scalar(node, v, "#{path}[#{i}]", path) }
+        if node.array_ok? && array_like?(value)
+          value.to_a.each_with_index { |v, i| scalar(node, v, "#{path}[#{i}]", path) }
         else
           scalar(node, value, path, path)
         end
@@ -112,6 +114,15 @@ module Plotly
         when "boolean"
           invalid!(path, "expected true or false, got #{value.inspect}") unless [true, false].include?(value)
         when "number", "integer", "angle" then number(node, value, path)
+        end
+      end
+
+      # Arrays, Ranges, Sets and data frame columns; Serializer writes all of them as arrays.
+      def array_like?(value)
+        case value
+        when Array then true
+        when String, Symbol, Hash, Numeric, Time, Date, true, false, nil then false
+        else value.respond_to?(:to_a)
         end
       end
 

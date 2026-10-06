@@ -81,6 +81,11 @@ RSpec.describe Plotly::Attributes do
       expect { build(scatter, {marker_size: [4, 8, 12]}) }.not_to raise_error
     end
 
+    it "checks array-like values given for attributes that accept one value per point" do
+      expect { build(scatter, {marker_size: 4..6}) }.not_to raise_error
+      expect(error_for(scatter, {marker_size: Set[4, "big"]})).to include('marker.size[1]: expected a number, got "big"')
+    end
+
     it "explains that a string title must now be written as a hash" do
       expect(error_for(schema.layout, {title: "Sales"})).to include('use title: {text: "Sales"} or title_text: "Sales"')
     end

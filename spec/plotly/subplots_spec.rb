@@ -36,10 +36,22 @@ RSpec.describe "Plotly.make_subplots" do
     expect([fig.layout.dig("yaxis", "type"), fig.layout.dig("yaxis2", "type")]).to eq([nil, :log])
   end
 
+  it "updates axes that traces refer to even when the layout does not define them yet" do
+    fig = Plotly::Figure.new.add_scatter(y: [1]).add_scatter(y: [2], xaxis: "x2", yaxis: "y2")
+    fig.update_xaxes(title_text: "time")
+    expect(fig.layout.keys).to contain_exactly("xaxis", "xaxis2")
+  end
+
   it "updates only the traces in a given cell" do
     fig = Plotly.make_subplots(rows: 1, cols: 2).add_scatter(y: [1], row: 1, col: 1).add_scatter(y: [2], row: 1, col: 2)
     fig.update_traces({name: "right"}, row: 1, col: 2)
     expect(fig.data.map { |t| t["name"] }).to eq([nil, "right"])
+  end
+
+  it "places domain traces such as pies in their cell and updates them by cell" do
+    fig = Plotly.make_subplots(rows: 1, cols: 2).add_pie(values: [1], row: 1, col: 1).add_pie(values: [2], row: 1, col: 2)
+    fig.update_traces({hole: 0.5}, row: 1, col: 2)
+    expect(fig.data.map { |t| t["hole"] }).to eq([nil, 0.5])
   end
 
   it "rejects a cell outside the grid and row/col on a figure without subplots" do

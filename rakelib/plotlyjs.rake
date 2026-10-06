@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "digest"
+require "fileutils"
 require "json"
 require "net/http"
 require_relative "../lib/plotly/version"
@@ -35,6 +36,7 @@ namespace :plotlyjs do
     actual = Digest::SHA256.hexdigest(body)
     raise "plotly.js checksum mismatch: expected #{PLOTLY_JS_SHA256}, got #{actual}" unless actual == PLOTLY_JS_SHA256
 
+    FileUtils.mkdir_p(File.dirname(PLOTLY_JS_PATH)) # its only file is gitignored, so a fresh clone lacks it
     File.binwrite(PLOTLY_JS_PATH, body)
     puts "Wrote #{PLOTLY_JS_PATH} (plotly.js #{Plotly::PLOTLY_JS_VERSION})"
   end

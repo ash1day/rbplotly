@@ -185,7 +185,14 @@ module Plotly
     def in_cell?(trace, row, col)
       return true unless row || col
 
-      grid!.cells(row, col).any? { |cell| cell.axis_ids == [trace["xaxis"] || "x", trace["yaxis"] || "y"] }
+      grid!.cells(row, col).any? do |cell|
+        domain = trace["domain"]
+        if domain.is_a?(Hash)
+          domain["x"] == cell.x_domain && domain["y"] == cell.y_domain
+        else
+          cell.axis_ids == [trace["xaxis"] || "x", trace["yaxis"] || "y"]
+        end
+      end
     end
 
     def cell_reference(node, row, col)
@@ -203,7 +210,13 @@ module Plotly
       keys = if row || col
         grid!.cells(row, col).map { |cell| cell.layout_key(letter) }
       else
-        found = @layout.keys.grep(/\A#{letter}axis\d*\z/)
+        # Traces on cartesian axes refer to x/y unless they name another axis.
+        referenced = @data.filter_map do |t|
+          next unless schema.trace(t["type"])&.child("#{letter}axis")
+
+          (t["#{letter}axis"] || letter).to_s.sub(/\A#{letter}/, "#{letter}axis")
+        end
+        found = (@layout.keys.grep(/\A#{letter}axis\d*\z/) + referenced).uniq
         found.empty? ? ["#{letter}axis"] : found
       end
       update_layout(keys.to_h { |key| [key, attrs] })
