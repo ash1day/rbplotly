@@ -97,6 +97,34 @@ RSpec.describe "Rendering in a browser", :browser do
       expect(errors).to eq([])
     end
 
+    it "explains a failed plotly.js download and loads it again for the next output" do
+      # The handler stays for later examples; it lets every other request through.
+      blocked = 0
+      @browser.network.intercept
+      @browser.on(:request) do |request|
+        if request.url == Plotly::HTML::CDN_URL && blocked.zero?
+          blocked += 1
+          request.abort
+        else
+          request.continue
+        end
+      end
+      visit("offline.html", '<div id="first">' + bar.to_iruby.last + '</div><div id="second"></div>')
+      sleep 0.5
+      expect(@browser.evaluate("document.getElementById('first').textContent")).to include("could not load plotly.js")
+
+      @browser.execute(<<~JS)
+        var out = document.getElementById("second");
+        out.innerHTML = #{Plotly::Serializer.dump(bar.to_iruby.last)};
+        out.querySelectorAll("script").forEach(function (old) {
+          var s = document.createElement("script"); s.textContent = old.textContent; old.replaceWith(s);
+        });
+      JS
+      deadline = Time.now + 20
+      sleep 0.1 until @browser.evaluate("!!document.querySelector('#second .main-svg')") || Time.now > deadline
+      expect(@browser.evaluate("document.querySelector('#second .plotly-graph-div').data.map(t => t.type)")).to eq(%w[bar])
+    end
+
     it "draws in a page that uses RequireJS (classic Notebook)" do
       require_js = '<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.7/require.min.js"></script>'
       errors = visit("classic.html", require_js + notebook_html)

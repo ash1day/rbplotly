@@ -54,6 +54,17 @@ RSpec.describe "Plotly.make_subplots" do
     expect(fig.data.map { |t| t["hole"] }).to eq([nil, 0.5])
   end
 
+  it "leaves traces that are not on x/y axes or in a cell out of cell updates" do
+    fig = Plotly.make_subplots(rows: 1, cols: 2)
+      .add_scatter(y: [1], row: 1, col: 1)
+      .add_surface(z: [[1, 2], [3, 4]])
+      .add_scatter(y: [2], xaxis: :x2, yaxis: :y2)
+    fig.update_traces({opacity: 0.5}, row: 1, col: 1)
+    fig.update_traces({name: "right"}, row: 1, col: 2)
+    expect(fig.data.map { |t| t["opacity"] }).to eq([0.5, nil, nil])
+    expect(fig.data.map { |t| t["name"] }).to eq([nil, nil, "right"])
+  end
+
   it "rejects a cell outside the grid and row/col on a figure without subplots" do
     fig = Plotly.make_subplots(rows: 1, cols: 2)
     expect { fig.add_scatter(y: [1], row: 2, col: 1) }.to raise_error(ArgumentError, "row 2, col 1 is outside the 1x2 subplot grid")

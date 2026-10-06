@@ -59,6 +59,7 @@ module Plotly
           }
           script.addEventListener("load", function () { draw(window.Plotly); });
           script.addEventListener("error", function () {
+            script.remove(); // so the next output tries again
             var el = document.getElementById("#{id}");
             if (el) el.textContent = "rbplotly: could not load plotly.js from " + src;
           });

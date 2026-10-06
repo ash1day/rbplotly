@@ -194,8 +194,10 @@ module Plotly
         domain = trace["domain"]
         if domain.is_a?(Hash)
           domain["x"] == cell.x_domain && domain["y"] == cell.y_domain
+        elsif schema.trace(trace["type"])&.child("xaxis")
+          cell.axis_ids == [(trace["xaxis"] || "x").to_s, (trace["yaxis"] || "y").to_s]
         else
-          cell.axis_ids == [trace["xaxis"] || "x", trace["yaxis"] || "y"]
+          false # 3D, polar, map... traces are not in any cell
         end
       end
     end

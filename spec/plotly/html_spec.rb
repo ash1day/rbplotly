@@ -107,6 +107,7 @@ RSpec.describe "HTML output" do
 
     it "says so in the output when plotly.js cannot be loaded, instead of leaving it blank" do
       expect(fig.to_iruby.last).to include('script.addEventListener("error"')
+      expect(fig.to_iruby.last).to include("script.remove()")
     end
 
     it "gives IRuby a MIME bundle, which IRuby prefers over #to_html" do
