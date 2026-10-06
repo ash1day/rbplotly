@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Installs development dependencies and downloads the pinned plotly.js bundle.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+bundle install
+bundle exec rake plotlyjs:fetch

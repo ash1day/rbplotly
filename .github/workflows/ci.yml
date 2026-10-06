@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  spec:
+    name: Ruby ${{ matrix.ruby }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: ["3.3", "3.4", "4.0"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - uses: actions/cache@v6
+        with:
+          path: lib/plotly/assets/plotly.min.js
+          key: plotlyjs-${{ hashFiles('rakelib/plotlyjs.rake', 'lib/plotly/version.rb') }}
+      - run: bundle exec rake spec
+
+  browser:
+    name: Rendering in Chrome
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "4.0"
+          bundler-cache: true
+      - run: bundle exec rake spec:browser
+      - run: bundle exec rake gallery
+
+  lint:
+    name: Lint, schema and package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "4.0"
+          bundler-cache: true
+      - run: bundle exec rake standard
+      - name: Generated schema matches the pinned plotly.js
+        run: bundle exec rake schema:check
+      - name: Gem builds and contains plotly.js
+        run: |
+          bundle exec rake build
+          gem spec pkg/rbplotly-*.gem files | grep -q 'lib/plotly/assets/plotly.min.js'
+      - run: bundle exec yard doc --fail-on-warning

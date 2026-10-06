@@ -1,0 +1,24 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: rubygems
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "4.0"
+          bundler-cache: true
+      - name: Tag matches Plotly::VERSION
+        run: test "v$(ruby -Ilib -rplotly/version -e 'print Plotly::VERSION')" = "${GITHUB_REF_NAME}"
+      - run: bundle exec rake spec
+      # Builds the gem (fetching the checksum-pinned plotly.js) and pushes it via trusted publishing.
+      - uses: rubygems/release-gem@v1

@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# An IRB session with rbplotly loaded, e.g. `Plotly::Figure.new.add_bar(y: [1, 2]).show`.
+require "bundler/setup"
+require "rbplotly"
+require "irb"
+
+IRB.start(__FILE__)
