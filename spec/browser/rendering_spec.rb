@@ -9,7 +9,10 @@ RSpec.describe "Rendering in a browser", :browser do
     @dir = Dir.mktmpdir
     @server = WEBrick::HTTPServer.new(Port: 0, DocumentRoot: @dir, Logger: WEBrick::Log.new(File::NULL), AccessLog: [])
     Thread.new { @server.start }
-    @browser = Ferrum::Browser.new(headless: true, timeout: 30, window_size: [1000, 700])
+    @browser = Ferrum::Browser.new(headless: true, timeout: 30, process_timeout: 30, window_size: [1000, 700])
+  rescue Ferrum::ProcessTimeoutError => e
+    warn e.output
+    raise
   end
 
   after(:all) do
