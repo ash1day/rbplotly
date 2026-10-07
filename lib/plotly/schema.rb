@@ -92,5 +92,8 @@ module Plotly
 
     # @return [Node] plotly.js config options
     def config = Node.new("config", @raw.fetch("config"))
+
+    # @return [Node] attributes of an animation frame (data and layout are validated separately)
+    def frame = Node.new("frames", @raw.fetch("frames")).item
   end
 end

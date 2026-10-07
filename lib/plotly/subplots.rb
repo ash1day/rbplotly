@@ -18,11 +18,15 @@ module Plotly
   # @param subplot_titles [Array<String>, nil] one title per cell, in row-major order
   # @param horizontal_spacing [Float] gap between columns, as a fraction of the figure width
   # @param vertical_spacing [Float] gap between rows, as a fraction of the figure height
+  # @param column_widths [Array<Numeric>, nil] positive relative column widths, left to right
+  # @param row_heights [Array<Numeric>, nil] positive relative row heights, top to bottom
+  # @param specs [Array<Array<Hash>>, nil] one hash per cell; `secondary_y: true` adds a right y axis
   # @param figure_options [Hash] passed to {Figure#initialize} (`layout:`, `config:`, `validate:`)
   # @return [Figure]
   def self.make_subplots(rows: 1, cols: 1, shared_xaxes: false, shared_yaxes: false, subplot_titles: nil,
-    horizontal_spacing: 0.2 / cols, vertical_spacing: 0.3 / rows, **figure_options)
-    grid = Subplots::Grid.new(rows, cols, horizontal_spacing, vertical_spacing)
+    horizontal_spacing: nil, vertical_spacing: nil, column_widths: nil, row_heights: nil, specs: nil, **figure_options)
+    grid = Subplots::Grid.new(rows, cols, horizontal_spacing, vertical_spacing,
+      column_widths: column_widths, row_heights: row_heights, specs: specs)
     titles = Array(subplot_titles)
     if titles.size > grid.cells.size
       raise ArgumentError, "#{titles.size} subplot titles for #{grid.cells.size} cells"
@@ -39,34 +43,52 @@ module Plotly
   # Grid layout behind {Plotly.make_subplots}.
   # @api private
   module Subplots
-    Cell = Struct.new(:row, :col, :index, :x_domain, :y_domain) do
+    Cell = Struct.new(:row, :col, :index, :x_domain, :y_domain, :secondary_index) do
       def suffix = (index == 1) ? "" : index.to_s
 
-      def axis_ids = ["x#{suffix}", "y#{suffix}"]
+      def axis_ids(secondary_y = false) = ["x#{suffix}", secondary_y ? "y#{secondary_index}" : "y#{suffix}"]
 
       def layout_key(letter) = "#{letter}axis#{suffix}"
+
+      def y_keys(secondary_y = nil)
+        keys = []
+        keys << layout_key("y") unless secondary_y == true
+        keys << "yaxis#{secondary_index}" if secondary_index && secondary_y != false
+        keys
+      end
     end
 
     class Grid
       attr_reader :rows, :cols
 
-      def initialize(rows, cols, horizontal_spacing, vertical_spacing)
+      def initialize(rows, cols, horizontal_spacing, vertical_spacing, column_widths: nil, row_heights: nil, specs: nil)
         unless rows.is_a?(Integer) && cols.is_a?(Integer) && rows.positive? && cols.positive?
           raise ArgumentError, "rows and cols must be positive integers"
         end
 
         @rows = rows
         @cols = cols
-        width = (1.0 - horizontal_spacing * (cols - 1)) / cols
-        height = (1.0 - vertical_spacing * (rows - 1)) / rows
-        raise ArgumentError, "spacing leaves no room for the subplots" unless width.positive? && height.positive?
+        horizontal_spacing = 0.2 / cols if horizontal_spacing.nil?
+        vertical_spacing = 0.3 / rows if vertical_spacing.nil?
+        horizontal_spacing = spacing(horizontal_spacing, cols, "horizontal_spacing")
+        vertical_spacing = spacing(vertical_spacing, rows, "vertical_spacing")
+        widths = sizes(column_widths, cols, 1.0 - horizontal_spacing * (cols - 1), "column_widths")
+        heights = sizes(row_heights, rows, 1.0 - vertical_spacing * (rows - 1), "row_heights")
+        secondary = secondary_cells(specs)
+        next_axis = rows * cols
 
+        y1 = 1.0
         @cells = (1..rows).flat_map do |row|
-          (1..cols).map do |col|
-            x0 = (col - 1) * (width + horizontal_spacing)
-            y1 = 1.0 - (row - 1) * (height + vertical_spacing)
-            Cell.new(row, col, (row - 1) * cols + col, domain(x0, x0 + width), domain(y1 - height, y1))
+          x0 = 0.0
+          cells = (1..cols).map do |col|
+            second_axis = secondary[row - 1][col - 1] ? (next_axis += 1) : nil
+            cell = Cell.new(row, col, (row - 1) * cols + col,
+              domain(x0, x0 + widths[col - 1]), domain(y1 - heights[row - 1], y1), second_axis)
+            x0 += widths[col - 1] + horizontal_spacing
+            cell
           end
+          y1 -= heights[row - 1] + vertical_spacing
+          cells
         end
       end
 
@@ -91,6 +113,10 @@ module Plotly
           layout[cell.layout_key("y")] = {"domain" => cell.y_domain, "anchor" => x_id}.merge(
             (shared_y && cell.col != 1) ? linked(cell(cell.row, 1).axis_ids[1]) : {}
           )
+          if cell.secondary_index
+            layout["yaxis#{cell.secondary_index}"] = {"anchor" => x_id, "overlaying" => y_id,
+              "side" => "right", "automargin" => true}
+          end
         end
       end
 
@@ -108,6 +134,48 @@ module Plotly
       end
 
       private
+
+      def positive_number?(value)
+        value.is_a?(Numeric) && !value.is_a?(Complex) && value.finite? && value.positive?
+      end
+
+      def spacing(value, count, name)
+        unless value.is_a?(Numeric) && !value.is_a?(Complex) && value.finite? && value.between?(0, 1)
+          raise ArgumentError, "#{name} must be a finite number between 0 and 1"
+        end
+        raise ArgumentError, "spacing leaves no room for the subplots" unless value * (count - 1) < 1
+
+        value.to_f
+      end
+
+      def sizes(values, count, available, name)
+        values = Array.new(count, 1) if values.nil?
+        unless values.is_a?(Array) && values.size == count && values.all? { |v| positive_number?(v) }
+          raise ArgumentError, "#{name} must contain #{count} positive finite numbers"
+        end
+        largest = values.max
+        weights = values.map { |v| v.fdiv(largest) }
+        total = weights.sum
+        weights.map { |v| available * v / total }
+      end
+
+      def secondary_cells(specs)
+        return Array.new(rows) { Array.new(cols, false) } if specs.nil?
+        unless specs.is_a?(Array) && specs.size == rows && specs.all? { |row| row.is_a?(Array) && row.size == cols }
+          raise ArgumentError, "specs must be a #{rows}x#{cols} array of cell hashes"
+        end
+        specs.map do |row|
+          row.map do |spec|
+            unless spec.is_a?(Hash) && spec.keys.all? { |k| k.to_s == "secondary_y" }
+              raise ArgumentError, "each spec must be a Hash with only the secondary_y option"
+            end
+            value = spec.transform_keys(&:to_s).fetch("secondary_y", false)
+            raise ArgumentError, "secondary_y must be true or false" unless [true, false].include?(value)
+
+            value
+          end
+        end
+      end
 
       # Follows another axis' range and leaves the tick labels to it.
       def linked(axis_id) = {"matches" => axis_id, "showticklabels" => false}

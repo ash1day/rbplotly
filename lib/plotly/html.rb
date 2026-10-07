@@ -25,13 +25,16 @@ module Plotly
     # @param height [Integer, String, nil] element height; by default the layout height, else
     #   450px for a fragment (a percentage would collapse in a container of automatic height)
     #   and the whole window for a full document
+    # @param auto_play [Boolean] start animation after registering frames
+    # @param animation_opts [Hash] options passed to Plotly.animate (frame and transition durations, etc.)
     # @return [String]
-    def render(figure, include_plotlyjs: :cdn, full_html: false, div_id: nil, width: nil, height: nil)
+    def render(figure, include_plotlyjs: :cdn, full_html: false, div_id: nil, width: nil, height: nil,
+      auto_play: true, animation_opts: {})
       id = div_id || "rbplotly-#{SecureRandom.uuid}"
       body = [
         plotlyjs_tag(include_plotlyjs),
         %(<div id="#{CGI.escapeHTML(id)}" class="plotly-graph-div" style="#{style(width, height || default_height(figure, full_html))}"></div>),
-        "<script>\n#{draw_call(figure, id)}\n</script>"
+        "<script>\n#{draw_call(figure, id, auto_play: auto_play, animation_opts: animation_opts)}\n</script>"
       ].compact.join("\n")
       full_html ? document(figure, body) : body
     end
@@ -69,10 +72,18 @@ module Plotly
     end
 
     # @api private
-    def draw_call(figure, id)
+    def draw_call(figure, id, auto_play: true, animation_opts: {})
       config = DEFAULT_CONFIG.merge(figure.config)
       args = [id, figure.data, figure.layout, config].map { |arg| Serializer.dump(arg) }
-      "Plotly.newPlot(#{args.join(", ")});"
+      script = "Plotly.newPlot(#{args.join(", ")})"
+      unless figure.frames.empty?
+        plot_id = Serializer.dump(id)
+        script += ".then(function () { return Plotly.addFrames(#{plot_id}, #{Serializer.dump(figure.frames)}); })"
+        if auto_play
+          script += ".then(function () { return Plotly.animate(#{plot_id}, null, #{Serializer.dump(animation_opts)}); })"
+        end
+      end
+      script + ";"
     end
 
     def plotlyjs_tag(mode)

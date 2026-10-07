@@ -3,7 +3,7 @@
 require "did_you_mean"
 
 module Plotly
-  # A plotly.js figure: traces (`data`), `layout` and `config`.
+  # A plotly.js figure: traces (`data`), `layout`, `config` and animation `frames`.
   #
   # Every attribute is checked against the schema of the bundled plotly.js release when it
   # is added, so a typo fails where it was written instead of silently drawing nothing.
@@ -20,12 +20,15 @@ module Plotly
     attr_reader :layout
     # @return [Hash{String => Object}] plotly.js config (modebar, responsiveness, ...)
     attr_reader :config
+    # @return [Array<Hash{String => Object}>] animation frames; direct mutation skips validation
+    attr_reader :frames
 
     # @param data [Array<Hash>] traces; a trace without `type` is a scatter trace
     # @param layout [Hash]
     # @param config [Hash]
     # @param validate [Boolean] check attributes against the plotly.js schema
-    def initialize(data: [], layout: {}, config: {}, validate: true)
+    # @param frames [Array<Hash>] partial trace/layout updates for animation
+    def initialize(data: [], layout: {}, config: {}, validate: true, frames: [])
       @validate = validate
       @grid = nil
       @data = []
@@ -34,6 +37,28 @@ module Plotly
       raise ArgumentError, "data must be an Array of trace Hashes, got #{data.inspect}" unless data.is_a?(Array)
 
       data.each { |trace| add_trace(trace) }
+      self.frames = frames
+    end
+
+    # Replaces the animation frames after validating all of them.
+    # Define the base traces first so frames may omit their trace types.
+    # @param frames [Array<Hash>]
+    # @return [Array<Hash>]
+    def frames=(frames)
+      raise ValidationError, "frames: expected an Array of Hashes" unless frames.is_a?(Array)
+
+      @frames = frames.each_with_index.map { |frame, i| build_frame(frame, i) }
+    end
+
+    # Appends a frame. `traces` maps its data entries to zero-based base trace indices.
+    # @param frame [Hash] frame attributes, merged with keyword arguments
+    # @return [self]
+    def add_frame(frame = {}, **attrs)
+      unless frame.is_a?(Hash)
+        raise ValidationError, "frames[#{@frames.size}]: expected a Hash"
+      end
+      @frames << build_frame(frame.transform_keys(&:to_s).merge(attrs.transform_keys(&:to_s)), @frames.size)
+      self
     end
 
     # Appends a trace.
@@ -41,23 +66,25 @@ module Plotly
     # @param trace [Hash] trace attributes; keyword arguments are merged into it
     # @param row [Integer, nil] subplot row (1-based), for figures made by {Plotly.make_subplots}
     # @param col [Integer, nil] subplot column (1-based)
+    # @param secondary_y [Boolean] use the cell's right y axis (requires row, col and a secondary_y spec)
     # @return [self]
-    def add_trace(trace = {}, row: nil, col: nil, **attrs)
+    def add_trace(trace = {}, row: nil, col: nil, secondary_y: false, **attrs)
+      check_secondary_y(secondary_y)
       trace = trace.to_h { |k, v| [k.to_s, v] }.merge(attrs.transform_keys(&:to_s))
       type = (trace.delete("type") || "scatter").to_s
       node = trace_node(type, "data[#{@data.size}]")
       built = {"type" => type}.merge(build(node, trace, "data[#{@data.size}]"))
-      built.merge!(cell_reference(node, row, col)) if row || col
+      built.merge!(cell_reference(node, row, col, secondary_y)) if row || col || secondary_y
       @data << built
       self
     end
 
     Schema.default.trace_types.each do |type|
-      # @!method add_scatter(row: nil, col: nil, **attrs)
+      # @!method add_scatter(row: nil, col: nil, secondary_y: false, **attrs)
       #   Appends a trace of this type; one such helper exists for every plotly.js trace type.
       #   @return [Figure]
-      define_method(:"add_#{type}") do |trace = {}, row: nil, col: nil, **attrs|
-        add_trace(trace.merge(attrs).merge(type: type), row: row, col: col)
+      define_method(:"add_#{type}") do |trace = {}, row: nil, col: nil, secondary_y: false, **attrs|
+        add_trace(trace.merge(attrs).merge(type: type), row: row, col: col, secondary_y: secondary_y)
       end
     end
 
@@ -81,10 +108,13 @@ module Plotly
     #   block receiving the normalized trace
     # @param row [Integer, nil] only traces in this subplot row
     # @param col [Integer, nil] only traces in this subplot column
+    # @param secondary_y [Boolean, nil] select right/left y-axis traces; nil selects both
     # @return [self]
-    def update_traces(attrs = {}, selector: nil, row: nil, col: nil, **kw)
+    def update_traces(attrs = {}, selector: nil, row: nil, col: nil, secondary_y: nil, **kw)
+      check_secondary_y(secondary_y)
+      grid! unless secondary_y.nil?
       attrs = attrs.merge(kw)
-      targets = @data.each_index.select { |i| selected?(@data[i], selector) && in_cell?(@data[i], row, col) }
+      targets = @data.each_index.select { |i| selected?(@data[i], selector) && in_cell?(@data[i], row, col, secondary_y) }
       updates = targets.to_h do |i|
         [i, build(trace_node(@data[i]["type"], "data[#{i}]"), attrs, "data[#{i}]")]
       end
@@ -97,17 +127,22 @@ module Plotly
     def update_xaxes(attrs = {}, row: nil, col: nil, **kw) = update_axes("x", attrs.merge(kw), row, col)
 
     # Deep-merges attributes into every y axis, or into the y axis of one subplot.
+    # @param secondary_y [Boolean, nil] select right/left y axes; nil selects both
     # @return [self]
-    def update_yaxes(attrs = {}, row: nil, col: nil, **kw) = update_axes("y", attrs.merge(kw), row, col)
+    def update_yaxes(attrs = {}, row: nil, col: nil, secondary_y: nil, **kw)
+      check_secondary_y(secondary_y)
+      update_axes("y", attrs.merge(kw), row, col, secondary_y)
+    end
 
     # Renders the figure as HTML. See {HTML.render} for the options.
     #
     # @example In a Rails view
     #   <%= raw @figure.to_html(height: 400) %>
     # @return [String] an HTML fragment (or document with `full_html: true`)
-    def to_html(include_plotlyjs: :cdn, full_html: false, div_id: nil, width: nil, height: nil)
+    def to_html(include_plotlyjs: :cdn, full_html: false, div_id: nil, width: nil, height: nil,
+      auto_play: true, animation_opts: {})
       HTML.render(self, include_plotlyjs: include_plotlyjs, full_html: full_html, div_id: div_id,
-        width: width, height: height)
+        width: width, height: height, auto_play: auto_play, animation_opts: animation_opts)
     end
 
     # Writes a standalone HTML page. By default plotly.js is embedded so the file works offline
@@ -115,9 +150,13 @@ module Plotly
     #
     # @param path [String]
     # @param open [Boolean] also open the page in the default browser
+    # @param auto_play [Boolean] start animation after the figure is drawn
+    # @param animation_opts [Hash] options passed to Plotly.animate
     # @return [String] the path written
-    def write_html(path, include_plotlyjs: :inline, open: false, width: nil, height: nil)
-      File.write(path, to_html(include_plotlyjs: include_plotlyjs, full_html: true, width: width, height: height))
+    def write_html(path, include_plotlyjs: :inline, open: false, width: nil, height: nil,
+      auto_play: true, animation_opts: {})
+      File.write(path, to_html(include_plotlyjs: include_plotlyjs, full_html: true, width: width, height: height,
+        auto_play: auto_play, animation_opts: animation_opts))
       Browser.open(File.expand_path(path)) if open
       path
     end
@@ -144,9 +183,13 @@ module Plotly
     # @return [Array(String, String)]
     def to_iruby = ["text/html", HTML.notebook(self)]
 
-    # @return [Hash{String => Object}] `{"data" => [...], "layout" => {...}}`, sharing the
+    # @return [Hash{String => Object}] data, layout and nonempty frames, sharing the
     #   figure's own Hashes: changing them skips validation, as with {#data} and {#layout}
-    def to_h = {"data" => @data, "layout" => @layout}
+    def to_h
+      result = {"data" => @data, "layout" => @layout}
+      result["frames"] = @frames unless @frames.empty?
+      result
+    end
 
     # @return [String] the figure as plotly.js JSON (config is not included, as in plotly.py)
     def to_json(*) = Serializer.dump(to_h)
@@ -165,6 +208,10 @@ module Plotly
     private
 
     def schema = Schema.default
+
+    def build_frame(frame, index)
+      Frames.build(frame, data: @data, path: "frames[#{index}]", validate: @validate)
+    end
 
     def build(node, attrs, path) = Attributes.build(node, attrs, path: path, validate: @validate)
 
@@ -187,25 +234,34 @@ module Plotly
       end
     end
 
-    def in_cell?(trace, row, col)
-      return true unless row || col
+    def check_secondary_y(value)
+      raise ArgumentError, "secondary_y must be true, false or nil" unless [true, false, nil].include?(value)
+    end
+
+    def in_cell?(trace, row, col, secondary_y = nil)
+      return true unless row || col || !secondary_y.nil?
 
       grid!.cells(row, col).any? do |cell|
         domain = trace["domain"]
         if domain.is_a?(Hash)
-          domain["x"] == cell.x_domain && domain["y"] == cell.y_domain
+          secondary_y.nil? && domain["x"] == cell.x_domain && domain["y"] == cell.y_domain
         elsif schema.trace(trace["type"])&.child("xaxis")
-          cell.axis_ids == [(trace["xaxis"] || "x").to_s, (trace["yaxis"] || "y").to_s]
+          axes = [(trace["xaxis"] || "x").to_s, (trace["yaxis"] || "y").to_s]
+          (secondary_y != true && cell.axis_ids == axes) ||
+            (secondary_y != false && cell.secondary_index && cell.axis_ids(true) == axes)
         else
           false # 3D, polar, map... traces are not in any cell
         end
       end
     end
 
-    def cell_reference(node, row, col)
+    def cell_reference(node, row, col, secondary_y)
       cell = grid!.cell(row, col)
+      if secondary_y && (!node.child("xaxis") || !cell.secondary_index)
+        raise ArgumentError, "secondary_y needs a cartesian trace and a cell with specs: {secondary_y: true}"
+      end
       if node.child("xaxis")
-        {"xaxis" => cell.axis_ids[0], "yaxis" => cell.axis_ids[1]}
+        {"xaxis" => cell.axis_ids[0], "yaxis" => cell.axis_ids(secondary_y)[1]}
       elsif node.child("domain")
         {"domain" => {"x" => cell.x_domain, "y" => cell.y_domain}}
       else
@@ -213,9 +269,9 @@ module Plotly
       end
     end
 
-    def update_axes(letter, attrs, row, col)
-      keys = if row || col
-        grid!.cells(row, col).map { |cell| cell.layout_key(letter) }
+    def update_axes(letter, attrs, row, col, secondary_y = nil)
+      keys = if row || col || !secondary_y.nil?
+        grid!.cells(row, col).flat_map { |cell| (letter == "y") ? cell.y_keys(secondary_y) : [cell.layout_key(letter)] }
       else
         # Traces on cartesian axes refer to x/y unless they name another axis.
         referenced = @data.filter_map do |t|

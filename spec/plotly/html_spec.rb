@@ -96,6 +96,31 @@ RSpec.describe "HTML output" do
     end
   end
 
+  describe "animation output" do
+    before { fig.add_frame(name: "</script><script>bad()</script>", data: [{y: [3, 4]}]) }
+
+    it "registers frames after drawing and then starts playback" do
+      html = fig.to_html(div_id: "chart", animation_opts: {frame: {duration: 100}})
+      expect(html).to include('.then(function () { return Plotly.addFrames("chart", ')
+      expect(html).to include('.then(function () { return Plotly.animate("chart", null, {"frame":{"duration":100}}); })')
+      expect(html).not_to include("<script>bad()")
+    end
+
+    it "registers frames without starting them when auto_play is false" do
+      html = fig.to_html(auto_play: false)
+      expect(html).to include("Plotly.addFrames")
+      expect(html).not_to include("Plotly.animate")
+      Dir.mktmpdir do |dir|
+        file = fig.write_html(File.join(dir, "animation.html"), include_plotlyjs: false, auto_play: false)
+        expect(File.read(file)).not_to include("Plotly.animate")
+      end
+    end
+
+    it "includes animation frames in notebook output" do
+      expect(fig.to_iruby.last).to include("Plotly.addFrames", "Plotly.animate")
+    end
+  end
+
   describe "notebooks" do
     it "renders as HTML that loads the pinned plotly.js once per page" do
       mime, html = fig.to_iruby

@@ -34,7 +34,8 @@ class SchemaPruner
     {
       "traces" => traces,
       "layout" => layout,
-      "config" => prune_object(@schema.fetch("config"))
+      "config" => prune_object(@schema.fetch("config")),
+      "frames" => prune(@schema.fetch("frames"))
     }
   end
 

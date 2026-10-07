@@ -57230,5 +57230,29 @@
         "type": "boolean"
       }
     }
+  },
+  "frames": {
+    "array": {
+      "attrs": {
+        "baseframe": {
+          "type": "string"
+        },
+        "data": {
+          "type": "any"
+        },
+        "group": {
+          "type": "string"
+        },
+        "layout": {
+          "type": "any"
+        },
+        "name": {
+          "type": "string"
+        },
+        "traces": {
+          "type": "any"
+        }
+      }
+    }
   }
 }

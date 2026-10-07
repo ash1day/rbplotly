@@ -42,6 +42,11 @@ RSpec.describe Plotly::Serializer do
     expect(dump({title: "売上"})).to eq('{"title":"売上"}')
   end
 
+  it "preserves characters affected by the script_safe bug in json before 2.9" do
+    labels = ["瀨戸内", "倩", "\u2028", "\u2029"]
+    expect(JSON.parse(dump(labels))).to eq(labels)
+  end
+
   it "rejects values that have no JSON form, including records that only happen to have #to_a" do
     expect { dump([Object.new]) }.to raise_error(TypeError, /cannot be written as plotly.js JSON/)
     expect { dump([Struct.new(:a).new(1)]) }.to raise_error(TypeError, /cannot be written as plotly.js JSON/)

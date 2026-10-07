@@ -4,6 +4,28 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+## [1.0.1] - 2026-10-07
+
+### Added
+
+- Relative subplot sizes through `column_widths` and `row_heights`, and per-cell right y
+  axes through `specs: [[{secondary_y: true}]]`. Trace placement, trace updates and y-axis
+  updates accept `secondary_y`; existing primary axis numbering is preserved.
+- Animation frames through `Figure.new(frames:)`, `add_frame` and `frames=`, with validation
+  of partial trace/layout updates and inclusion in JSON output. HTML and notebook output
+  register frames and start playback; `to_html` and `write_html` accept `auto_play` and
+  `animation_opts`.
+- Runnable examples for secondary axes and animation.
+
+### Fixed
+
+- Require `json >= 2.9` to avoid the older `script_safe` bug that corrupts characters such
+  as `瀨` and `倩` in chart labels and JSON output.
+- Reject negative, non-finite and out-of-range subplot spacing instead of silently
+  overlapping or collapsing cells; reject invalid row/column counts before calculating defaults.
+
 ## [1.0.0] - 2026-10-07
 
 A rewrite. Figures are now plain hashes checked against the plot schema of a pinned
@@ -60,5 +82,7 @@ plotly.js release, instead of hand-written classes that covered a few attributes
 
 The last 0.x release. See the [git history](https://github.com/ash1day/rbplotly/commits/v0.1.2).
 
+[Unreleased]: https://github.com/ash1day/rbplotly/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/ash1day/rbplotly/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/ash1day/rbplotly/compare/v0.1.2...v1.0.0
 [0.1.2]: https://github.com/ash1day/rbplotly/releases/tag/v0.1.2

@@ -124,6 +124,44 @@ fig.update_yaxes({title_text: "USD (M)"}, row: 1, col: 1)
 Traces on x/y axes go on the cell's axes and domain traces (pie, sunburst, ...) fill the cell;
 3D, polar, ternary and map traces cannot be placed by `row:`/`col:` yet.
 
+Use positive relative `column_widths:` and `row_heights:` to size cells. Row heights are
+ordered from top to bottom; spacing is subtracted before distributing the remaining space.
+Enable a right y axis with `specs:`, then select it with `secondary_y: true`:
+
+```ruby
+fig = Plotly.make_subplots(cols: 2, column_widths: [2, 1],
+  specs: [[{secondary_y: true}, {}]])
+fig.add_bar(x: %w[Jan Feb Mar], y: [100, 150, 180], name: "Orders", row: 1, col: 1)
+fig.add_scatter(x: %w[Jan Feb Mar], y: [2, 3, 2.5], name: "Conversion %",
+  row: 1, col: 1, secondary_y: true)
+fig.update_yaxes(title_text: "Orders", row: 1, col: 1, secondary_y: false)
+fig.update_yaxes(title_text: "Conversion", ticksuffix: "%", secondary_y: true)
+```
+
+`specs` currently accepts only `secondary_y` in each cell hash. Existing primary axis
+numbers stay unchanged; secondary axes are numbered after all primary axes.
+`update_traces` and `update_yaxes` accept `secondary_y: true` (right), `false` (left),
+or the default `nil` (both). Axis sharing links only primary axes.
+
+### Animation
+
+Supply `frames:` to the constructor, append with `add_frame`, or replace with `frames=`.
+Define base traces before frames: omitted trace types are inferred from the corresponding
+base trace. A frame's `traces` array maps its data entries to zero-based trace indices.
+
+```ruby
+fig = Plotly::Figure.new.add_scatter(x: [0, 1], y: [0, 1], mode: :"lines+markers")
+fig.update_layout(xaxis_range: [0, 1], yaxis_range: [0, 3])
+fig.add_frame(name: "first", data: [{y: [1, 2]}])
+fig.add_frame(name: "second", data: [{y: [2, 3]}])
+fig.write_html("animation.html", animation_opts: {frame: {duration: 700}, transition: {duration: 300}})
+```
+
+HTML and notebook output register frames after drawing, then play them automatically.
+Pass `auto_play: false` to `to_html` or `write_html` to register frames without starting;
+use layout `updatemenus`/`sliders` or JavaScript to trigger playback. Nonempty frames are
+included in `to_h` and `to_json`. Without base data, an omitted trace type defaults to scatter.
+
 ## Output
 
 | Method | Gives you |

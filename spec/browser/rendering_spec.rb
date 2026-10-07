@@ -86,6 +86,102 @@ RSpec.describe "Rendering in a browser", :browser do
     expect(errors).to eq([])
   end
 
+  it "draws independently scaled secondary axes in a grid with unequal cell sizes" do
+    subplots = Plotly.make_subplots(rows: 2, cols: 2, column_widths: [1, 3], row_heights: [3, 1],
+      specs: [[{secondary_y: true}, {}], [{}, {}]], horizontal_spacing: 0.1, vertical_spacing: 0.1)
+      .add_scatter(y: [1, 2], row: 1, col: 1)
+      .add_scatter(y: [100, 200], row: 1, col: 1, secondary_y: true)
+      .add_scatter(y: [3, 4], row: 2, col: 2)
+    errors = visit("secondary.html", subplots.to_html(include_plotlyjs: :inline, div_id: "secondary"))
+    drawn_charts
+    state = @browser.evaluate(<<~JS)
+      (function () {
+        var gd = document.getElementById('secondary');
+        return {axes: gd._fullData.map(t => t.yaxis), side: gd._fullLayout.yaxis5.side,
+          overlaying: gd._fullLayout.yaxis5.overlaying,
+          primaryRange: gd._fullLayout.yaxis.range, secondaryRange: gd._fullLayout.yaxis5.range,
+          x: gd._fullLayout.xaxis.domain, x4: gd._fullLayout.xaxis4.domain,
+          y: gd._fullLayout.yaxis.domain, y4: gd._fullLayout.yaxis4.domain};
+      })()
+    JS
+    expect(state["axes"]).to eq(%w[y y5 y4])
+    expect(state).to include("side" => "right", "overlaying" => "y",
+      "x" => [0, 0.225], "x4" => [0.325, 1], "y" => [0.325, 1], "y4" => [0, 0.225])
+    expect(state["primaryRange"].last).to be < 10
+    expect(state["secondaryRange"].last).to be > 200
+    expect(errors).to eq([])
+  end
+
+  describe "animation" do
+    let(:animation) do
+      Plotly::Figure.new.add_scatter(y: [0, 1]).add_bar(y: [10, 20])
+        .add_frame(name: "next", traces: [1], data: [{y: [30, 40]}], layout: {title_text: "Next frame"})
+    end
+
+    def wait_for_animation
+      deadline = Time.now + 10
+      loop do
+        state = @browser.evaluate(<<~JS)
+          (function () {
+            var gd = document.querySelector('.plotly-graph-div');
+            return gd && gd.data && gd.layout.title && gd.layout.title.text === 'Next frame'
+              ? {ys: gd.data.map(t => t.y), frames: gd._transitionData._frames.map(f => f.name)} : null;
+          })()
+        JS
+        return state if state
+        raise "animation did not finish" if Time.now > deadline
+
+        sleep 0.05
+      end
+    end
+
+    it "registers frames without auto-playing and can play a named frame" do
+      errors = visit("frames.html", animation.to_html(include_plotlyjs: :inline, div_id: "animated", auto_play: false))
+      drawn_charts
+      expect(@browser.evaluate("document.getElementById('animated').data[1].y")).to eq([10, 20])
+      @browser.execute(<<~JS)
+        Plotly.animate('animated', ['next'], {frame: {duration: 0}, transition: {duration: 0}});
+      JS
+      expect(wait_for_animation).to eq("ys" => [[0, 1], [30, 40]], "frames" => ["next"])
+      expect(errors).to eq([])
+    end
+
+    it "automatically plays frames after drawing the figure" do
+      errors = visit("autoplay.html", animation.to_html(include_plotlyjs: :inline,
+        animation_opts: {frame: {duration: 0}, transition: {duration: 0}}))
+      expect(wait_for_animation["ys"]).to eq([[0, 1], [30, 40]])
+      expect(errors).to eq([])
+    end
+
+    it "plays frames in notebook output" do
+      errors = visit("notebook-animation.html", animation.to_iruby.last)
+      expect(wait_for_animation["ys"]).to eq([[0, 1], [30, 40]])
+      expect(errors).to eq([])
+    end
+
+    it "inherits baseframe styling while animating only the secondary-axis trace" do
+      fig = Plotly.make_subplots(specs: [[{secondary_y: true}]])
+        .add_scatter(y: [0, 1], row: 1, col: 1)
+        .add_bar(y: [10, 20], row: 1, col: 1, secondary_y: true)
+        .add_frame(name: "base", traces: [1], data: [{y: [30, 40], marker_color: "red"}])
+        .add_frame(name: "child", baseframe: "base", traces: [1], data: [{y: [50, 60]}],
+          layout: {title_text: "Next frame"})
+      errors = visit("inherited-frame.html", fig.to_html(include_plotlyjs: :inline, div_id: "inherited", auto_play: false))
+      drawn_charts
+      @browser.execute(<<~JS)
+        Plotly.animate('inherited', ['child'], {frame: {duration: 0}, transition: {duration: 0}});
+      JS
+      expect(wait_for_animation).to eq("ys" => [[0, 1], [50, 60]], "frames" => %w[base child])
+      expect(@browser.evaluate(<<~JS)).to eq(["y2", "red"])
+        (() => {
+          const trace = document.getElementById('inherited')._fullData[1];
+          return [trace.yaxis, trace.marker.color];
+        })()
+      JS
+      expect(errors).to eq([])
+    end
+  end
+
   describe "notebook output" do
     let(:bar) { Plotly::Figure.new.add_bar(y: [1, 2]) }
     let(:notebook_html) { bar.to_iruby.last }

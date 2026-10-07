@@ -44,4 +44,8 @@ RSpec.describe Plotly::Schema do
     expect(annotations).to be_array
     expect(annotations.item.child("showarrow").type).to eq("boolean")
   end
+
+  it "describes the metadata of animation frames" do
+    expect(schema.frame.attribute_names).to contain_exactly("name", "group", "baseframe", "data", "layout", "traces")
+  end
 end

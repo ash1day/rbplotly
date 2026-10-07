@@ -30,5 +30,5 @@ Gem::Specification.new do |spec|
   spec.files = Dir["lib/**/*.{rb,json,js}", "README.md", "CHANGELOG.md", "LICENSE.txt"]
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "json", ">= 2.7"
+  spec.add_dependency "json", ">= 2.9"
 end
